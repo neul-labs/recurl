@@ -11,7 +11,8 @@ rcurl is a shim that executes a real curl engine. It does not reimplement curl. 
 ## Execution flow
 
 - Strict mode (default): rcurl executes the curl engine with no argv changes and no default header or TLS changes.
-- Layered mode (explicit): rcurl invokes rcurld, which may perform opt-in layers but must still finish by producing curl-consistent outputs.
+- Layered mode (explicit): rcurl may invoke rcurld for JS, or run JS inline when the daemon is disabled. Impersonation can run daemonless. It must still finish by producing curl-consistent outputs.
+- The daemon may be used in strict mode as a pure exec service; `--rcurl-daemon` does not enable layers.
 
 ## Engine discovery
 

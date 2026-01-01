@@ -5,12 +5,21 @@ The daemon is an optional execution service. It can speed up startup and host he
 ## Responsibilities
 
 - Execute the curl engine on behalf of rcurl.
+- Provide a strict-mode exec service that does not alter curl behavior.
 - Provide optional layers: impersonation, JS preflight + replay.
 - Keep heavyweight resources warm (Chromium, cached profiles).
+
+## Lifecycle
+
+- rcurld is started on first demand (for example, when JS is requested or when `--rcurl-daemon on` is set).
+- It shuts down automatically after an idle timeout.
+- Default idle timeout is 60s; configure via `RCURL_DAEMON_IDLE_MS` (milliseconds).
+- When `--rcurl-daemon off` is set, rcurl runs JS inline and no daemon is started.
 
 ## Transport
 
 - Default IPC: `ipc:///tmp/rcurl.<uid>.sock` (unix).
+- IPC transport uses nng.
 - If TCP is used, require token-based auth.
 
 ## RPCs

@@ -23,5 +23,5 @@
 
 ## M4: Auto-fallback (optional)
 
-- Enabled only under layered mode or `--rcurl-auto`.
+- Enabled only when layered mode is on; `--rcurl-auto` explicitly requests it.
 - Strict mode remains a pure proxy.

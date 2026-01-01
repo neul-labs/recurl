@@ -10,6 +10,8 @@ rcurl's primary product is curl compliance. Strict mode must be a drop-in replac
 - Files created or modified by curl are identical (content and naming).
 - Timing differences are acceptable; output differences are not.
 
+Strict mode applies when no debug flag is set. `--rcurl-debug` is an explicit opt-out for extra rcurl output.
+
 ## Conformance harness
 
 A golden suite compares upstream curl and rcurl against the same test servers and asserts:
