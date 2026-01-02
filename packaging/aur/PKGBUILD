@@ -1,0 +1,55 @@
+# Maintainer: rcurl team
+# AUR package for rcurl - drop-in curl replacement with anti-bot bypass
+
+pkgname=rcurl
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Drop-in curl replacement with automatic anti-bot bypass"
+arch=('x86_64' 'aarch64')
+url="https://github.com/user/rcurl"
+license=('MIT')
+depends=('curl' 'openssl')
+makedepends=('cargo' 'git')
+optdepends=(
+    'chromium: for JS preflight (auto-downloaded if not present)'
+    'google-chrome: alternative to chromium for JS preflight'
+)
+provides=('rcurl')
+conflicts=('rcurl-bin' 'rcurl-git')
+source=("$pkgname-$pkgver.tar.gz::https://github.com/user/rcurl/archive/v$pkgver.tar.gz")
+sha256sums=('SKIP')
+
+build() {
+    cd "$pkgname-$pkgver"
+    export RUSTUP_TOOLCHAIN=stable
+    export CARGO_TARGET_DIR=target
+    cargo build --release --locked
+    cargo build --release --locked --bin rcurld --features daemon
+}
+
+check() {
+    cd "$pkgname-$pkgver"
+    export RUSTUP_TOOLCHAIN=stable
+    cargo test --release --locked
+}
+
+package() {
+    cd "$pkgname-$pkgver"
+
+    # Install binaries
+    install -Dm755 "target/release/rcurl" "$pkgdir/usr/bin/rcurl"
+    install -Dm755 "target/release/rcurld" "$pkgdir/usr/bin/rcurld"
+
+    # Install license
+    install -Dm644 "LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+
+    # Install documentation
+    install -Dm644 "README.md" "$pkgdir/usr/share/doc/$pkgname/README.md"
+    install -Dm644 "docs/installation.md" "$pkgdir/usr/share/doc/$pkgname/installation.md"
+    install -Dm644 "docs/cli.md" "$pkgdir/usr/share/doc/$pkgname/cli.md"
+
+    # Install shell completions (if available)
+    # install -Dm644 "completions/rcurl.bash" "$pkgdir/usr/share/bash-completion/completions/rcurl"
+    # install -Dm644 "completions/rcurl.zsh" "$pkgdir/usr/share/zsh/site-functions/_rcurl"
+    # install -Dm644 "completions/rcurl.fish" "$pkgdir/usr/share/fish/vendor_completions.d/rcurl.fish"
+}

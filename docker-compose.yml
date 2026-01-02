@@ -1,0 +1,38 @@
+# Docker Compose configuration for rcurl
+# Usage:
+#   docker-compose run --rm rcurl https://example.com
+#   docker-compose up -d rcurld  # Start daemon in background
+
+services:
+  # rcurl CLI - for one-off requests
+  rcurl:
+    build: .
+    image: rcurl:latest
+    volumes:
+      - ./output:/output
+    environment:
+      - RCURL_DEBUG=${RCURL_DEBUG:-0}
+    # Override entrypoint for custom commands
+    # entrypoint: ["rcurl"]
+
+  # rcurld daemon - for persistent browser pool
+  rcurld:
+    build: .
+    image: rcurl:latest
+    entrypoint: ["rcurld", "start"]
+    environment:
+      - RCURL_DAEMON_IDLE_MS=300000  # 5 minutes
+      - RCURL_POOL_MIN=1
+      - RCURL_POOL_MAX=3
+    # Chromium needs extra permissions
+    cap_add:
+      - SYS_ADMIN
+    security_opt:
+      - seccomp:unconfined
+    shm_size: 2gb
+    volumes:
+      - rcurl-socket:/tmp
+    restart: unless-stopped
+
+volumes:
+  rcurl-socket:

@@ -1,46 +1,69 @@
 # Compliance
 
-rcurl's primary product is curl compliance. Strict mode must be a drop-in replacement for upstream curl.
+rcurl has two modes with different compliance goals:
 
-## Invariants (strict mode)
+| Mode | Goal |
+|------|------|
+| Smart (default) | Get the content, transparently bypass anti-bot |
+| Strict (`--rcurl-strict`) | Byte-for-byte identical to `curl_engine` |
 
-- stdout is byte-for-byte identical to upstream curl.
-- stderr is byte-for-byte identical, including progress meter, verbose, and trace output.
-- Exit code is identical.
-- Files created or modified by curl are identical (content and naming).
-- Timing differences are acceptable; output differences are not.
+## Strict mode invariants
 
-Strict mode applies when no debug flag is set. `--rcurl-debug` is an explicit opt-out for extra rcurl output.
+When `--rcurl-strict` or `RCURL_STRICT=1` is set:
+
+- stdout byte-for-byte identical to `curl_engine`
+- stderr byte-for-byte identical (progress meter, verbose, trace)
+- Exit code identical
+- Output files identical (content and naming)
+- No fallback, no retries
+
+## Smart mode behavior
+
+Default mode prioritizes successful content retrieval:
+
+- First attempt uses `curl_engine` (identical behavior if it succeeds)
+- On failure (403, 429, captcha), escalates through layers
+- Final output is from whichever layer succeeded
+- User sees only the result, not the escalation process
 
 ## Conformance harness
 
-A golden suite compares upstream curl and rcurl against the same test servers and asserts:
+Tests `rcurl --rcurl-strict` against `curl_engine`:
 
-- stdout identical (bytes)
-- stderr identical (bytes)
-- exit code identical
-- output files identical (by hash)
-- side-effect files identical (cookies, traces, headers)
+```
+┌─────────────┐     ┌─────────────┐
+│ curl_engine │     │rcurl --rcurl│
+│             │     │   -strict   │
+└──────┬──────┘     └──────┬──────┘
+       │                   │
+       ▼                   ▼
+   ┌───────────────────────────┐
+   │   Compare: stdout, stderr,│
+   │   exit code, output files │
+   └───────────────────────────┘
+```
 
-Minimum test matrix:
+## Test matrix
 
-1. GET/POST/PUT, `-d`, `-F`, multipart boundaries
-2. Redirects `-L`, max-redirs
-3. Output flags: `-o`, `-O`, `-D`, `-i`, `-v`, `-sS`
-4. Config parsing: `.curlrc`, `-K/--config`
-5. Retry/timeouts: `--retry*`, `--max-time`, `--connect-timeout`
+1. HTTP methods: GET, POST, PUT, DELETE, `-d`, `-F`, multipart
+2. Redirects: `-L`, `--max-redirs`
+3. Output: `-o`, `-O`, `-D`, `-i`, `-v`, `-sS`
+4. Config: `.curlrc`, `-K/--config`
+5. Timeouts: `--retry*`, `--max-time`, `--connect-timeout`
 6. Proxies: http/https/socks, proxy auth
-7. TLS failure modes: bad cert, hostname mismatch, revoked/expired (as possible)
-8. DNS behaviors: `--resolve`, `--connect-to`, `--interface`, `--unix-socket`
+7. TLS: cert errors, hostname mismatch
+8. DNS: `--resolve`, `--connect-to`, `--unix-socket`
 9. HTTP versions: `--http1.1`, `--http2`
-10. Upload/download resume: `-C -`
-11. stdin and TTY-sensitive cases: `-d @-`, `-T -`, progress meter on/off
+10. Resume: `-C -`
+11. stdin/TTY: `-d @-`, `-T -`, progress meter
 
 ## Version pinning
 
-- Bundle a pinned curl version and record `curl -V` in CI.
-- This makes byte-for-byte comparisons stable and meaningful.
+- `curl_engine` is a specific pinned curl version
+- Record `curl_engine -V` in CI for reproducibility
+- Byte-for-byte comparisons are stable against this pinned version
 
-## Gate
+## Development gate
 
-No layered features merge until strict compliance is green in the harness.
+- Strict mode conformance must pass before merging any changes
+- Smart mode features cannot break strict mode behavior

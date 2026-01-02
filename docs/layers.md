@@ -1,35 +1,124 @@
 # Layers
 
-Layers are optional, opt-in features that run only when layer flags or `RCURL_MODE=layered` are used.
+Layers are the escalation strategies rcurl uses when requests are blocked. In smart mode (default), layers are applied automatically on failure. Users can also force specific layers with flags.
 
-Layered mode is enabled by `--rcurl-impersonate`, any `--rcurl-js*` flag, `--rcurl-auto`, or `RCURL_MODE=layered`. `--rcurl-daemon` does not enable layers by itself.
+## Escalation chain
 
-## Impersonation
+### Linux/macOS
 
-- Enabled with `--rcurl-impersonate <profile>`.
-- Does not require rcurld; rcurl can exec the impersonation-capable engine directly.
-- Implemented by switching the engine (for example, a curl build that supports impersonation).
-- All user flags are passed through verbatim.
-- Header precedence is respected. If the user sets `-H 'User-Agent: ...'`, rcurl must not override it unless explicitly requested.
+```
+curl_engine (plain curl)
+    │
+    ▼ on failure
+Impersonation (browser TLS fingerprint)
+    │
+    ▼ on failure
+JS preflight + replay (headless Chromium)
+    │
+    ▼
+Return result (success or final failure)
+```
 
-## JS preflight + replay
+### Windows
 
-- Enabled with `--rcurl-js`.
-- Uses rcurld by default for Chromium execution and cookie handoff. When the daemon is off, rcurl runs Chromium inline and hands cookies to the replay directly.
-- Headless Chromium performs a preflight to collect cookies, final URL, and required headers.
-- rcurl then replays the request through the curl engine using the original argv plus minimal additions (for example, a temp cookie jar via `-b`).
-- The default output remains curl output; use `--rcurl-js-rendered` to return rendered DOM instead.
+```
+curl_engine (plain curl)
+    │
+    ▼ on failure (impersonation not available)
+JS preflight + replay (headless Chromium)
+    │
+    ▼
+Return result (success or final failure)
+```
+
+## Layer 1: Impersonation
+
+**Availability**: Linux and macOS only. Not available on Windows.
+
+Mimics browser TLS fingerprints to bypass JA3/JA4 fingerprinting using [curl-impersonate](https://github.com/lwthiker/curl-impersonate).
+
+- **Automatic**: triggered when `curl_engine` receives 403/429/captcha
+- **Forced**: `--rcurl-impersonate <profile>`
+- Does not require the daemon; rcurl execs curl-impersonate directly
+- All user flags are passed through verbatim
+- Header precedence respected: user `-H 'User-Agent: ...'` is never overridden
+- On Windows, this layer is skipped and rcurl proceeds directly to JS preflight
+
+### curl-impersonate
+
+curl-impersonate is a patched curl that mimics browser TLS signatures:
+
+- Modified TLS handshake (cipher suites, extensions, curves)
+- Correct HTTP/2 settings (SETTINGS frame, pseudo-header order)
+- Browser-matching User-Agent and headers
+
+### Available profiles
+
+| Profile | Binary | Description |
+|---------|--------|-------------|
+| `chrome` | `curl_chrome` | Latest Chrome TLS fingerprint |
+| `chrome119` | `curl_chrome119` | Chrome 119 specifically |
+| `chrome120` | `curl_chrome120` | Chrome 120 specifically |
+| `firefox` | `curl_ff` | Latest Firefox fingerprint |
+| `firefox121` | `curl_ff121` | Firefox 121 specifically |
+| `safari` | `curl_safari` | Latest Safari fingerprint |
+| `edge` | `curl_edge` | Latest Edge fingerprint |
+
+### Integration
+
+rcurl bundles curl-impersonate binaries per platform:
+
+**Linux/macOS**:
+```
+rcurl/
+├── rcurl
+├── rcurld
+└── bin/
+    ├── curl_engine          # upstream curl
+    ├── curl_chrome          # chrome impersonation
+    ├── curl_ff              # firefox impersonation
+    └── curl_safari          # safari impersonation
+```
+
+**Windows**:
+```
+rcurl/
+├── rcurl.exe
+├── rcurld.exe
+└── bin/
+    └── curl_engine.exe      # upstream curl (no impersonation binaries)
+```
+
+When impersonation is triggered, rcurl execs the appropriate binary with the user's original flags. On Windows, `--rcurl-impersonate` will log a warning and proceed without impersonation.
+
+## Layer 2: JS preflight + replay
+
+Runs headless Chromium to solve JS challenges, then replays with curl.
+
+- **Automatic**: triggered when impersonation still receives blocking response
+- **Forced**: `--rcurl-js` (skips straight to Chromium)
+- Uses rcurld by default for warm Chromium pool
+- When daemon is off (`--rcurl-daemon off`), runs Chromium inline
+
+### How it works
+
+1. Headless Chromium loads the URL
+2. Waits for challenges to resolve (Cloudflare turnstile, etc.)
+3. Collects: cookies, final URL, required headers
+4. Replays request via `curl_engine` with collected state
+5. Returns curl output (or rendered DOM with `--rcurl-js-rendered`)
+
+### JS options
+
+- `--rcurl-js-wait <selector>`: wait for element before replay
+- `--rcurl-js-timeout <ms>`: preflight timeout (default: 30000)
+- `--rcurl-js-rendered`: return rendered DOM instead of replay
 
 ## Daemon warmups
 
-Safe warmups (do not affect strict semantics):
+The daemon keeps resources warm for fast escalation:
 
-- Keep Chromium running
-- Cache Chromium downloads
-- Maintain browser DNS cache
-- Cache per-profile cookies
-- Cache engine discovery
-
-Unsafe warmups (avoid in strict mode):
-
-- Anything that changes connect reuse or timing in a way that affects stderr interleaving
+- Chromium browser pool (pre-launched instances)
+- Cached cookies per domain
+- DNS cache
+- Engine binaries cached

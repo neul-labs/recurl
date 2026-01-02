@@ -1,0 +1,42 @@
+[package]
+name = "rcurl"
+version = "0.1.0"
+edition = "2021"
+description = "Drop-in curl replacement with automatic anti-bot bypass"
+license = "MIT"
+repository = "https://github.com/user/rcurl"
+keywords = ["curl", "http", "anti-bot", "scraping"]
+categories = ["command-line-utilities", "web-programming"]
+default-run = "rcurl"
+
+[[bin]]
+name = "rcurl"
+path = "src/main.rs"
+
+[[bin]]
+name = "rcurld"
+path = "src/daemon/main.rs"
+required-features = ["daemon"]
+
+[features]
+default = []
+daemon = []
+
+[dependencies]
+which = "7.0"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "time", "net", "io-util", "sync", "signal", "process"] }
+chromiumoxide = { version = "0.8", features = ["tokio-runtime"], default-features = false }
+chromiumoxide_fetcher = "0.8"
+futures = "0.3"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+libc = "0.2"
+url = "2.5"
+dirs = "5.0"
+
+[dev-dependencies]
+
+[profile.release]
+lto = true
+strip = true
+codegen-units = 1

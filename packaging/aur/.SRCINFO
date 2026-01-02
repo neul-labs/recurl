@@ -1,0 +1,21 @@
+pkgbase = rcurl
+	pkgdesc = Drop-in curl replacement with automatic anti-bot bypass
+	pkgver = 0.1.0
+	pkgrel = 1
+	url = https://github.com/user/rcurl
+	arch = x86_64
+	arch = aarch64
+	license = MIT
+	makedepends = cargo
+	makedepends = git
+	depends = curl
+	depends = openssl
+	optdepends = chromium: for JS preflight (auto-downloaded if not present)
+	optdepends = google-chrome: alternative to chromium for JS preflight
+	provides = rcurl
+	conflicts = rcurl-bin
+	conflicts = rcurl-git
+	source = rcurl-0.1.0.tar.gz::https://github.com/user/rcurl/archive/v0.1.0.tar.gz
+	sha256sums = SKIP
+
+pkgname = rcurl

@@ -1,0 +1,36 @@
+{
+    "version": "0.1.0",
+    "description": "Drop-in curl replacement with automatic anti-bot bypass",
+    "homepage": "https://github.com/user/rcurl",
+    "license": "MIT",
+    "architecture": {
+        "64bit": {
+            "url": "https://github.com/user/rcurl/releases/download/v0.1.0/rcurl-windows-x86_64.zip",
+            "hash": "PLACEHOLDER_SHA256_WINDOWS_X64"
+        }
+    },
+    "bin": [
+        "bin\\rcurl.exe"
+    ],
+    "checkver": {
+        "github": "https://github.com/user/rcurl"
+    },
+    "autoupdate": {
+        "architecture": {
+            "64bit": {
+                "url": "https://github.com/user/rcurl/releases/download/v$version/rcurl-windows-x86_64.zip"
+            }
+        }
+    },
+    "notes": [
+        "rcurl is installed! To use it as a drop-in curl replacement:",
+        "",
+        "Option 1: Add an alias to your PowerShell profile:",
+        "  Add-Content $PROFILE 'Set-Alias curl rcurl'",
+        "",
+        "Option 2: Use rcurl directly:",
+        "  rcurl https://example.com",
+        "",
+        "Note: The daemon (rcurld) is not available on Windows yet."
+    ]
+}

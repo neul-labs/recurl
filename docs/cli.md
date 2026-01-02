@@ -1,28 +1,83 @@
 # CLI
 
-rcurl forwards all standard curl flags unchanged. Only namespaced `--rcurl-*` flags are consumed by the shim.
+rcurl is a drop-in curl replacement. All standard curl flags work unchanged. Namespaced `--rcurl-*` flags control rcurl-specific behavior.
+
+## Default behavior (smart mode)
+
+By default, rcurl automatically escalates through layers when blocked:
+
+```bash
+# Direct invocation
+rcurl https://example.com
+
+# Via shell alias (if configured, see installation.md)
+curl https://example.com
+```
 
 ## Namespaced flags
 
-- `--rcurl-impersonate <profile>`: Enable an impersonation profile by switching the engine (daemon not required).
-- `--rcurl-js`: Run a JS preflight in headless Chromium, then replay with curl.
-- `--rcurl-js-rendered`: Return rendered DOM instead of replay output.
-- `--rcurl-js-wait <selector>`: Wait for a selector before replaying.
-- `--rcurl-js-timeout <ms>`: JS preflight timeout.
-- `--rcurl-daemon on|off`: Force daemon usage on or off. When off, JS runs inline. Does not enable layered mode.
-- `--rcurl-auto`: Enable safe auto-fallback behavior (layered mode only).
-- `--rcurl-debug`: Allow extra rcurl debug output. Does not enable layered mode but opts out of strict output parity.
+### Mode control
+
+| Flag | Description |
+|------|-------------|
+| `--rcurl-strict` | Disable fallback, pure curl passthrough |
+| `--rcurl-debug` | Show escalation steps and diagnostic output |
+
+### Layer control (force specific layers)
+
+| Flag | Description |
+|------|-------------|
+| `--rcurl-impersonate <profile>` | Force impersonation with profile (`chrome`, `firefox`, `safari`, `edge`) |
+| `--rcurl-js` | Force JS preflight (skip to Chromium) |
+| `--rcurl-js-rendered` | Return rendered DOM instead of curl replay |
+| `--rcurl-js-wait <selector>` | Wait for element before replay |
+| `--rcurl-js-timeout <ms>` | JS preflight timeout (default: 30000) |
+
+### Daemon control
+
+| Flag | Description |
+|------|-------------|
+| `--rcurl-daemon on` | Force daemon usage |
+| `--rcurl-daemon off` | Disable daemon, run JS inline |
 
 ## Environment variables
 
-- `RCURL_MODE=layered`: Enable layered mode without passing any layer flags.
-- `RCURL_DAEMON_IDLE_MS=<ms>`: Daemon idle timeout in milliseconds. Default is 60000.
+| Variable | Description |
+|----------|-------------|
+| `RCURL_STRICT=1` | Same as `--rcurl-strict` |
+| `RCURL_DEBUG=1` | Same as `--rcurl-debug` |
+| `RCURL_DAEMON_IDLE_MS=<ms>` | Daemon idle timeout (default: 60000) |
 
-## Layered mode selection
+## Examples
 
-Layered mode is enabled only by `--rcurl-impersonate`, any `--rcurl-js*` flag, `--rcurl-auto`, or `RCURL_MODE=layered`. `--rcurl-debug` does not enable layers but relaxes strict output parity for troubleshooting.
+```bash
+# Normal usage (smart fallback)
+rcurl https://protected-site.com
+
+# Force strict mode (no fallback)
+rcurl --rcurl-strict https://example.com
+RCURL_STRICT=1 rcurl https://example.com
+
+# Force impersonation (Linux/macOS only)
+rcurl --rcurl-impersonate chrome https://example.com
+
+# Force JS preflight
+rcurl --rcurl-js https://spa-site.com
+
+# Get rendered HTML instead of curl replay
+rcurl --rcurl-js-rendered https://spa-site.com
+
+# Debug: see what rcurl is doing
+rcurl --rcurl-debug https://protected-site.com
+```
 
 ## Version and help
 
-- `rcurl --version` and `rcurl -V` must mirror the curl engine output in strict mode.
-- Extra rcurl version lines are only allowed when `--rcurl-debug` is set.
+```bash
+# Shows curl_engine version (identical to upstream curl)
+rcurl --version
+rcurl -V
+
+# Shows both curl and rcurl version info
+rcurl --rcurl-debug --version
+```

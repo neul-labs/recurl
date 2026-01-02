@@ -1,0 +1,25 @@
+# Rust
+/target/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test binaries (bundled engines are tracked separately)
+/bin/curl_engine
+/bin/curl_chrome
+/bin/curl_ff
+/bin/curl_safari
