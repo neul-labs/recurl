@@ -96,4 +96,21 @@ Implemented and tested. All core milestones complete:
 - M4: Daemon (rcurld) for warm browser pool
 - M5: Distribution (packages, Docker, CI/CD)
 
-**Test coverage**: 106 tests (55 unit + 48 conformance + 3 browser integration)
+**Test coverage**: 115 tests (64 unit + 48 conformance + 3 browser integration)
+
+## Detection Coverage
+
+rcurl automatically detects and bypasses:
+- Cloudflare (Bot Management, Turnstile)
+- Akamai Bot Manager
+- PerimeterX / HUMAN Security
+- DataDome
+- Imperva / Incapsula
+- Kasada
+- Shape Security / F5 Bot Defense
+- Arkose Labs (FunCaptcha)
+- AWS WAF
+- GeeTest
+- hCaptcha
+- reCAPTCHA
+- Generic JavaScript challenges

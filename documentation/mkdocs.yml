@@ -1,0 +1,83 @@
+site_name: rcurl
+site_description: Drop-in curl replacement with automatic anti-bot bypass
+site_url: https://rcurl.dev
+repo_url: https://github.com/user/rcurl
+repo_name: user/rcurl
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep purple
+      accent: amber
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep purple
+      accent: amber
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search
+  - minify:
+      minify_html: true
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Quick Start: getting-started/quickstart.md
+    - Installation: getting-started/installation.md
+    - First Request: getting-started/first-request.md
+  - Usage:
+    - CLI Reference: usage/cli.md
+    - Modes: usage/modes.md
+    - Environment Variables: usage/environment.md
+  - How It Works:
+    - Architecture: how-it-works/architecture.md
+    - Escalation Layers: how-it-works/layers.md
+    - Detection: how-it-works/detection.md
+    - Daemon: how-it-works/daemon.md
+  - Reference:
+    - Platform Support: reference/platforms.md
+    - Anti-Bot Services: reference/antibot-services.md
+    - Troubleshooting: reference/troubleshooting.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/user/rcurl
+  generator: false
+
+copyright: Copyright &copy; 2024 rcurl contributors

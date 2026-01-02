@@ -355,10 +355,10 @@ All core milestones are complete:
 
 | Category | Tests | Status |
 |----------|-------|--------|
-| Unit tests (rcurl binary) | 55 | ✓ All passing |
+| Unit tests (rcurl binary) | 64 | ✓ All passing |
 | Conformance tests | 48 | ✓ All passing (requires curl_engine) |
 | Browser integration | 3 | ✓ All passing |
-| **Total** | **106** | **✓ All passing** |
+| **Total** | **115** | **✓ All passing** |
 
 ### Key Features Verified
 
@@ -389,13 +389,20 @@ All core milestones are complete:
 | macOS | `~/Library/Application Support/rcurl/chromium/` |
 | Windows | `%LOCALAPPDATA%\rcurl\chromium\` |
 
+## Completed Enhancements
+
+| Item | Status | Notes |
+|------|--------|-------|
+| AUR package (Arch Linux) | ✓ Done | `packaging/aur/PKGBUILD` |
+| Windows named pipes | ✓ Done | Full daemon IPC support on Windows |
+| Detection patterns | ✓ Done | Added Kasada, Shape/F5, Arkose, AWS WAF, GeeTest |
+| Chromium stealth patches | ✓ Done | 7 patches from puppeteer-extra-plugin-stealth |
+| Linux ARM64 workaround | ✓ Done | Helpful error + install instructions |
+
 ## Future work
 
 | Item | Status |
 |------|--------|
-| AUR package (Arch Linux) | Planned |
-| Linux ARM64 Chromium auto-download | Blocked (upstream) |
-| Windows daemon support | Partial (needs named pipe IPC) |
-| Detection pattern updates | Ongoing |
-| Stealth improvements | Ongoing |
-| Chromium stealth patches | Planned |
+| Linux ARM64 Chromium auto-download | Blocked (upstream support needed) |
+| Additional stealth patches | Optional |
+| Cookie persistence across sessions | Optional |

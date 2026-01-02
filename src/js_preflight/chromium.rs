@@ -153,11 +153,49 @@ fn find_system_chrome() -> Option<PathBuf> {
     None
 }
 
+/// Check if we're on an unsupported platform for auto-download
+fn is_unsupported_platform() -> bool {
+    let arch = std::env::consts::ARCH;
+    let os = std::env::consts::OS;
+
+    // Linux ARM64 is not supported by chromiumoxide_fetcher
+    os == "linux" && arch == "aarch64"
+}
+
+/// Get platform-specific install instructions
+fn get_install_instructions() -> &'static str {
+    let os = std::env::consts::OS;
+    let arch = std::env::consts::ARCH;
+
+    if os == "linux" && arch == "aarch64" {
+        "Linux ARM64 detected. Auto-download not available.\n\
+         Install Chromium manually:\n\
+         \n\
+         Ubuntu/Debian:\n\
+           sudo apt update && sudo apt install -y chromium-browser\n\
+         \n\
+         Fedora:\n\
+           sudo dnf install -y chromium\n\
+         \n\
+         Arch Linux:\n\
+           sudo pacman -S chromium\n\
+         \n\
+         After installation, rcurl will automatically detect it."
+    } else if os == "linux" {
+        "Install Chromium: sudo apt install chromium-browser"
+    } else if os == "macos" {
+        "Install Chromium: brew install --cask chromium"
+    } else {
+        "Install Google Chrome from https://www.google.com/chrome/"
+    }
+}
+
 /// Download Chromium using chromiumoxide_fetcher
 ///
 /// Supported platforms for auto-download:
 /// - Linux x86_64
 /// - macOS aarch64 (Apple Silicon)
+/// - macOS x86_64
 /// - Windows x86_64 and i686
 ///
 /// For unsupported platforms (e.g., Linux ARM64), install Chromium manually.
@@ -165,6 +203,12 @@ async fn download_chromium(
     cache_dir: &PathBuf,
     debug: bool
 ) -> Result<PathBuf, Box<dyn std::error::Error + Send + Sync>> {
+    // Check for unsupported platforms first
+    if is_unsupported_platform() {
+        eprintln!("[rcurl] {}", get_install_instructions());
+        return Err("Chromium auto-download not available for this platform".into());
+    }
+
     // Create cache directory
     std::fs::create_dir_all(cache_dir)?;
 
@@ -185,16 +229,9 @@ async fn download_chromium(
             Ok(info.executable_path)
         }
         Err(e) => {
-            // Provide helpful error message for unsupported platforms
-            let arch = std::env::consts::ARCH;
-            let os = std::env::consts::OS;
-            Err(format!(
-                "Failed to download Chromium for {}-{}: {}. \
-                Please install Chrome/Chromium manually: \
-                sudo apt install chromium-browser (Linux) or \
-                brew install --cask chromium (macOS)",
-                os, arch, e
-            ).into())
+            // Provide helpful error message
+            eprintln!("[rcurl] {}", get_install_instructions());
+            Err(format!("Failed to download Chromium: {}", e).into())
         }
     }
 }
