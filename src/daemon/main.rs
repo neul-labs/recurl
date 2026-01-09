@@ -2,6 +2,9 @@
 //!
 //! Keeps Chromium instances warm for fast JS preflight operations.
 
+#[global_allocator]
+static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
+
 mod ipc;
 mod pool;
 mod protocol;

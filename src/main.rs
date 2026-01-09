@@ -3,6 +3,9 @@ use std::io::{self, Write};
 use std::process::{Command, Stdio, ExitCode};
 use std::path::PathBuf;
 
+#[global_allocator]
+static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
+
 mod config;
 mod daemon_client;
 mod detection;

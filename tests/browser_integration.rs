@@ -3,7 +3,10 @@
 //! These tests use rcurl's auto-download feature for Chromium.
 //! On first run, Chromium will be downloaded to ~/.local/share/rcurl/chromium/
 //!
-//! Run with: cargo test --test browser_integration
+//! Run with: cargo test --test browser_integration -- --test-threads=1
+//!
+//! NOTE: Tests must run serially (--test-threads=1) because Chrome's SingletonLock
+//! prevents multiple browser instances from using the same temp profile directory.
 //!
 //! Tests verify:
 //!   - Chromium auto-download
