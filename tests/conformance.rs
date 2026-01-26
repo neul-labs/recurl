@@ -1,8 +1,8 @@
-//! Conformance tests: verify rcurl --rcurl-strict matches curl exactly
+//! Conformance tests: verify recurl --recurl-strict matches curl exactly
 //!
 //! These tests compare stdout, stderr, and exit codes between:
 //! - curl (system or curl_engine)
-//! - rcurl --rcurl-strict
+//! - recurl --recurl-strict
 //!
 //! Run with: cargo test --test conformance
 //!
@@ -12,11 +12,11 @@
 use std::process::{Command, Output};
 use std::env;
 
-/// Test result comparing curl and rcurl outputs
+/// Test result comparing curl and recurl outputs
 #[derive(Debug)]
 struct ConformanceResult {
     curl_output: Output,
-    rcurl_output: Output,
+    recurl_output: Output,
     stdout_matches: bool,
     #[allow(dead_code)]
     stderr_matches: bool,
@@ -59,15 +59,15 @@ fn get_curl_path() -> String {
     env::var("CURL_PATH").unwrap_or_else(|_| "curl".to_string())
 }
 
-/// Get the path to the rcurl binary
-fn get_rcurl_path() -> String {
-    env::var("RCURL_PATH").unwrap_or_else(|_| {
+/// Get the path to the recurl binary
+fn get_recurl_path() -> String {
+    env::var("RECURL_PATH").unwrap_or_else(|_| {
         // Use the debug build by default
         env::current_exe()
             .ok()
             .and_then(|p| p.parent().map(|p| p.to_path_buf()))
-            .map(|p| p.join("rcurl").to_string_lossy().to_string())
-            .unwrap_or_else(|| "./target/debug/rcurl".to_string())
+            .map(|p| p.join("recurl").to_string_lossy().to_string())
+            .unwrap_or_else(|| "./target/debug/recurl".to_string())
     })
 }
 
@@ -79,61 +79,61 @@ fn run_curl(args: &[&str]) -> Output {
         .expect("Failed to execute curl")
 }
 
-/// Run rcurl in strict mode with given arguments and return output
-fn run_rcurl(args: &[&str]) -> Output {
-    Command::new(get_rcurl_path())
-        .arg("--rcurl-strict")
+/// Run recurl in strict mode with given arguments and return output
+fn run_recurl(args: &[&str]) -> Output {
+    Command::new(get_recurl_path())
+        .arg("--recurl-strict")
         .args(args)
         .output()
-        .expect("Failed to execute rcurl")
+        .expect("Failed to execute recurl")
 }
 
-/// Compare curl and rcurl outputs (strict byte-for-byte)
+/// Compare curl and recurl outputs (strict byte-for-byte)
 fn compare_outputs(curl_args: &[&str]) -> ConformanceResult {
     let curl_output = run_curl(curl_args);
-    let rcurl_output = run_rcurl(curl_args);
+    let recurl_output = run_recurl(curl_args);
 
-    let stdout_matches = curl_output.stdout == rcurl_output.stdout;
-    let stderr_matches = curl_output.stderr == rcurl_output.stderr;
-    let exit_code_matches = curl_output.status.code() == rcurl_output.status.code();
+    let stdout_matches = curl_output.stdout == recurl_output.stdout;
+    let stderr_matches = curl_output.stderr == recurl_output.stderr;
+    let exit_code_matches = curl_output.status.code() == recurl_output.status.code();
 
     ConformanceResult {
         curl_output,
-        rcurl_output,
+        recurl_output,
         stdout_matches,
         stderr_matches,
         exit_code_matches,
     }
 }
 
-/// Compare curl and rcurl outputs with normalization (for HTTP responses)
+/// Compare curl and recurl outputs with normalization (for HTTP responses)
 fn compare_outputs_normalized(curl_args: &[&str]) -> ConformanceResult {
     let curl_output = run_curl(curl_args);
-    let rcurl_output = run_rcurl(curl_args);
+    let recurl_output = run_recurl(curl_args);
 
     let curl_normalized = normalize_http_response(&curl_output.stdout);
-    let rcurl_normalized = normalize_http_response(&rcurl_output.stdout);
+    let recurl_normalized = normalize_http_response(&recurl_output.stdout);
 
-    let stdout_matches = curl_normalized == rcurl_normalized;
-    let stderr_matches = curl_output.stderr == rcurl_output.stderr;
-    let exit_code_matches = curl_output.status.code() == rcurl_output.status.code();
+    let stdout_matches = curl_normalized == recurl_normalized;
+    let stderr_matches = curl_output.stderr == recurl_output.stderr;
+    let exit_code_matches = curl_output.status.code() == recurl_output.status.code();
 
     ConformanceResult {
         curl_output,
-        rcurl_output,
+        recurl_output,
         stdout_matches,
         stderr_matches,
         exit_code_matches,
     }
 }
 
-/// Assert that rcurl output matches curl output (strict)
+/// Assert that recurl output matches curl output (strict)
 fn assert_conformant(args: &[&str]) {
     let result = compare_outputs(args);
     assert_result_conformant(&result, args);
 }
 
-/// Assert that rcurl output matches curl output (normalized for HTTP responses)
+/// Assert that recurl output matches curl output (normalized for HTTP responses)
 fn assert_conformant_http(args: &[&str]) {
     let result = compare_outputs_normalized(args);
     assert_result_conformant(&result, args);
@@ -147,18 +147,18 @@ fn assert_result_conformant(result: &ConformanceResult, args: &[&str]) {
         eprintln!("--- curl stdout ({} bytes) ---", result.curl_output.stdout.len());
         eprintln!("{}", String::from_utf8_lossy(&result.curl_output.stdout));
         eprintln!();
-        eprintln!("--- rcurl stdout ({} bytes) ---", result.rcurl_output.stdout.len());
-        eprintln!("{}", String::from_utf8_lossy(&result.rcurl_output.stdout));
+        eprintln!("--- recurl stdout ({} bytes) ---", result.recurl_output.stdout.len());
+        eprintln!("{}", String::from_utf8_lossy(&result.recurl_output.stdout));
         eprintln!();
         eprintln!("--- curl stderr ---");
         eprintln!("{}", String::from_utf8_lossy(&result.curl_output.stderr));
         eprintln!();
-        eprintln!("--- rcurl stderr ---");
-        eprintln!("{}", String::from_utf8_lossy(&result.rcurl_output.stderr));
+        eprintln!("--- recurl stderr ---");
+        eprintln!("{}", String::from_utf8_lossy(&result.recurl_output.stderr));
         eprintln!();
-        eprintln!("Exit codes: curl={:?}, rcurl={:?}",
+        eprintln!("Exit codes: curl={:?}, recurl={:?}",
             result.curl_output.status.code(),
-            result.rcurl_output.status.code());
+            result.recurl_output.status.code());
 
         panic!("Conformance test failed");
     }
@@ -477,30 +477,30 @@ fn test_multiple_cookies() {
 }
 
 // ============================================================================
-// Smart Mode (rcurl-specific, non-conformance)
+// Smart Mode (recurl-specific, non-conformance)
 // ============================================================================
 
-/// Run rcurl in smart mode (not strict) and return output
-fn run_rcurl_smart(args: &[&str]) -> Output {
-    Command::new(get_rcurl_path())
+/// Run recurl in smart mode (not strict) and return output
+fn run_recurl_smart(args: &[&str]) -> Output {
+    Command::new(get_recurl_path())
         .args(args)
         .output()
-        .expect("Failed to execute rcurl")
+        .expect("Failed to execute recurl")
 }
 
-/// Run rcurl with debug enabled and check stderr
-fn run_rcurl_debug(args: &[&str]) -> Output {
-    Command::new(get_rcurl_path())
-        .arg("--rcurl-debug")
+/// Run recurl with debug enabled and check stderr
+fn run_recurl_debug(args: &[&str]) -> Output {
+    Command::new(get_recurl_path())
+        .arg("--recurl-debug")
         .args(args)
         .output()
-        .expect("Failed to execute rcurl")
+        .expect("Failed to execute recurl")
 }
 
 #[test]
 fn test_smart_mode_success() {
     // Smart mode should work for successful requests (200 OK)
-    let output = run_rcurl_smart(&["-s", "https://httpbin.org/get"]);
+    let output = run_recurl_smart(&["-s", "https://httpbin.org/get"]);
     assert!(output.status.success());
     assert!(!output.stdout.is_empty());
 }
@@ -508,18 +508,18 @@ fn test_smart_mode_success() {
 #[test]
 fn test_debug_output() {
     // Debug mode should output diagnostics to stderr
-    let output = run_rcurl_debug(&["-s", "https://httpbin.org/get"]);
+    let output = run_recurl_debug(&["-s", "https://httpbin.org/get"]);
     let stderr = String::from_utf8_lossy(&output.stderr);
 
-    // Should contain rcurl debug markers
-    assert!(stderr.contains("[rcurl]"), "Debug output should contain [rcurl] prefix");
+    // Should contain recurl debug markers
+    assert!(stderr.contains("[recurl]"), "Debug output should contain [recurl] prefix");
     assert!(stderr.contains("detection:"), "Debug output should contain detection info");
 }
 
 #[test]
 fn test_debug_shows_version() {
     // Debug mode should show version info
-    let output = run_rcurl_debug(&["-s", "https://httpbin.org/get"]);
+    let output = run_recurl_debug(&["-s", "https://httpbin.org/get"]);
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(stderr.contains("version:"), "Debug output should show version");
 }
@@ -527,7 +527,7 @@ fn test_debug_shows_version() {
 #[test]
 fn test_smart_mode_detects_403() {
     // Smart mode should detect 403 as blocking status
-    let output = run_rcurl_debug(&["-s", "https://httpbin.org/status/403"]);
+    let output = run_recurl_debug(&["-s", "https://httpbin.org/status/403"]);
     let stderr = String::from_utf8_lossy(&output.stderr);
 
     // Should detect blocking status
@@ -539,11 +539,11 @@ fn test_smart_mode_detects_403() {
 
 #[test]
 fn test_impersonate_flag() {
-    // --rcurl-impersonate should be parsed (may fail if engine unavailable)
-    let output = Command::new(get_rcurl_path())
-        .args(&["--rcurl-debug", "--rcurl-impersonate", "chrome", "-s", "https://httpbin.org/get"])
+    // --recurl-impersonate should be parsed (may fail if engine unavailable)
+    let output = Command::new(get_recurl_path())
+        .args(&["--recurl-debug", "--recurl-impersonate", "chrome", "-s", "https://httpbin.org/get"])
         .output()
-        .expect("Failed to execute rcurl");
+        .expect("Failed to execute recurl");
 
     // Request should complete (engine may not be available, but parsing works)
     // Just verify exit without crash
@@ -553,10 +553,10 @@ fn test_impersonate_flag() {
 #[test]
 fn test_strict_mode_no_escalation() {
     // Strict mode should never attempt escalation
-    let output = Command::new(get_rcurl_path())
-        .args(&["--rcurl-strict", "--rcurl-debug", "-s", "https://httpbin.org/status/403"])
+    let output = Command::new(get_recurl_path())
+        .args(&["--recurl-strict", "--recurl-debug", "-s", "https://httpbin.org/status/403"])
         .output()
-        .expect("Failed to execute rcurl");
+        .expect("Failed to execute recurl");
 
     let stderr = String::from_utf8_lossy(&output.stderr);
 
@@ -568,33 +568,33 @@ fn test_strict_mode_no_escalation() {
 }
 
 // ============================================================================
-// JS Preflight (rcurl-specific)
+// JS Preflight (recurl-specific)
 // ============================================================================
 
 #[test]
 fn test_js_flag_parsing() {
-    // --rcurl-js flag should be recognized (may fail if Chrome not available)
-    let output = Command::new(get_rcurl_path())
-        .args(&["--rcurl-js", "--rcurl-debug", "-s", "https://httpbin.org/get"])
+    // --recurl-js flag should be recognized (may fail if Chrome not available)
+    let output = Command::new(get_recurl_path())
+        .args(&["--recurl-js", "--recurl-debug", "-s", "https://httpbin.org/get"])
         .output()
-        .expect("Failed to execute rcurl");
+        .expect("Failed to execute recurl");
 
     let stderr = String::from_utf8_lossy(&output.stderr);
 
     // Should indicate JS preflight mode
     assert!(
-        stderr.contains("--rcurl-js flag set") || stderr.contains("JS preflight"),
+        stderr.contains("--recurl-js flag set") || stderr.contains("JS preflight"),
         "Debug output should indicate JS preflight mode"
     );
 }
 
 #[test]
 fn test_js_rendered_flag_parsing() {
-    // --rcurl-js-rendered flag should be recognized
-    let output = Command::new(get_rcurl_path())
-        .args(&["--rcurl-js", "--rcurl-js-rendered", "--rcurl-debug", "-s", "https://httpbin.org/get"])
+    // --recurl-js-rendered flag should be recognized
+    let output = Command::new(get_recurl_path())
+        .args(&["--recurl-js", "--recurl-js-rendered", "--recurl-debug", "-s", "https://httpbin.org/get"])
         .output()
-        .expect("Failed to execute rcurl");
+        .expect("Failed to execute recurl");
 
     // Just verify it doesn't crash with these flags
     assert!(output.status.code().is_some());
@@ -602,11 +602,11 @@ fn test_js_rendered_flag_parsing() {
 
 #[test]
 fn test_js_timeout_flag_parsing() {
-    // --rcurl-js-timeout flag should be recognized
-    let output = Command::new(get_rcurl_path())
-        .args(&["--rcurl-js", "--rcurl-js-timeout", "5000", "--rcurl-debug", "-s", "https://httpbin.org/get"])
+    // --recurl-js-timeout flag should be recognized
+    let output = Command::new(get_recurl_path())
+        .args(&["--recurl-js", "--recurl-js-timeout", "5000", "--recurl-debug", "-s", "https://httpbin.org/get"])
         .output()
-        .expect("Failed to execute rcurl");
+        .expect("Failed to execute recurl");
 
     // Just verify it doesn't crash with these flags
     assert!(output.status.code().is_some());
@@ -614,11 +614,11 @@ fn test_js_timeout_flag_parsing() {
 
 #[test]
 fn test_js_wait_flag_parsing() {
-    // --rcurl-js-wait flag should be recognized
-    let output = Command::new(get_rcurl_path())
-        .args(&["--rcurl-js", "--rcurl-js-wait", "body", "--rcurl-debug", "-s", "https://httpbin.org/get"])
+    // --recurl-js-wait flag should be recognized
+    let output = Command::new(get_recurl_path())
+        .args(&["--recurl-js", "--recurl-js-wait", "body", "--recurl-debug", "-s", "https://httpbin.org/get"])
         .output()
-        .expect("Failed to execute rcurl");
+        .expect("Failed to execute recurl");
 
     // Just verify it doesn't crash with these flags
     assert!(output.status.code().is_some());

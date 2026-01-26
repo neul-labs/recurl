@@ -118,22 +118,22 @@ pub async fn execute_preflight(
     options: &PreflightOptions,
 ) -> PreflightResult {
     if options.debug {
-        eprintln!("[rcurl] JS preflight: starting for {}", url);
+        eprintln!("[recurl] JS preflight: starting for {}", url);
     }
 
     // Launch browser and execute preflight
     match browser::run_preflight(url, options).await {
         Ok(result) => {
             if options.debug {
-                eprintln!("[rcurl] JS preflight: success");
-                eprintln!("[rcurl] JS preflight: extracted {} cookies", result.cookies.count());
-                eprintln!("[rcurl] JS preflight: final URL = {}", result.final_url);
+                eprintln!("[recurl] JS preflight: success");
+                eprintln!("[recurl] JS preflight: extracted {} cookies", result.cookies.count());
+                eprintln!("[recurl] JS preflight: final URL = {}", result.final_url);
             }
             result
         }
         Err(e) => {
             if options.debug {
-                eprintln!("[rcurl] JS preflight: failed - {}", e);
+                eprintln!("[recurl] JS preflight: failed - {}", e);
             }
             PreflightResult::failed(e.to_string())
         }

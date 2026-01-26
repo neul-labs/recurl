@@ -1,12 +1,12 @@
 # Modes
 
-rcurl operates in two modes: Smart mode (default) and Strict mode.
+recurl operates in two modes: Smart mode (default) and Strict mode.
 
 ---
 
 ## Smart Mode (Default)
 
-In smart mode, rcurl automatically handles anti-bot protection.
+In smart mode, recurl automatically handles anti-bot protection.
 
 ### Behavior
 
@@ -45,21 +45,21 @@ In smart mode, rcurl automatically handles anti-bot protection.
     ```
 
     !!! note
-        Impersonation is not available on Windows. rcurl skips directly to JS preflight.
+        Impersonation is not available on Windows. recurl skips directly to JS preflight.
 
 ### Example
 
 ```bash
-rcurl https://protected-site.com
+recurl https://protected-site.com
 ```
 
 With debug output:
 
 ```bash
-rcurl --rcurl-debug https://protected-site.com
-# [rcurl] curl_engine: 403 Cloudflare
-# [rcurl] Escalating: impersonation (chrome)
-# [rcurl] curl_chrome: 200 OK
+recurl --recurl-debug https://protected-site.com
+# [recurl] curl_engine: 403 Cloudflare
+# [recurl] Escalating: impersonation (chrome)
+# [recurl] curl_chrome: 200 OK
 # <successful response>
 ```
 
@@ -74,16 +74,16 @@ rcurl --rcurl-debug https://protected-site.com
 
 ## Strict Mode
 
-In strict mode, rcurl behaves exactly like curl. No fallback, no automatic retry.
+In strict mode, recurl behaves exactly like curl. No fallback, no automatic retry.
 
 ### Enable Strict Mode
 
 ```bash
 # Via flag
-rcurl --rcurl-strict https://example.com
+recurl --recurl-strict https://example.com
 
 # Via environment variable
-RCURL_STRICT=1 rcurl https://example.com
+RCURL_STRICT=1 recurl https://example.com
 ```
 
 ### Behavior
@@ -97,7 +97,7 @@ RCURL_STRICT=1 rcurl https://example.com
 ### When to Use
 
 - **Compliance testing** - verify curl compatibility
-- **Debugging** - isolate whether an issue is rcurl or curl
+- **Debugging** - isolate whether an issue is recurl or curl
 - **CI/CD** - when you need predictable curl behavior
 - **Scripts** - that depend on exact curl output format
 
@@ -105,10 +105,10 @@ RCURL_STRICT=1 rcurl https://example.com
 
 ```bash
 # Strict mode - may return 403
-rcurl --rcurl-strict https://protected-site.com
+recurl --recurl-strict https://protected-site.com
 
 # Compare to smart mode
-rcurl https://protected-site.com  # Returns 200
+recurl https://protected-site.com  # Returns 200
 ```
 
 ---
@@ -122,7 +122,7 @@ You can force specific layers instead of automatic escalation.
 Skip curl engine, go directly to impersonation:
 
 ```bash
-rcurl --rcurl-impersonate chrome https://example.com
+recurl --recurl-impersonate chrome https://example.com
 ```
 
 !!! note
@@ -133,7 +133,7 @@ rcurl --rcurl-impersonate chrome https://example.com
 Skip curl engine and impersonation, go directly to Chromium:
 
 ```bash
-rcurl --rcurl-js https://example.com
+recurl --recurl-js https://example.com
 ```
 
 ### Get Rendered HTML
@@ -141,7 +141,7 @@ rcurl --rcurl-js https://example.com
 Return the DOM after JavaScript execution instead of curl replay:
 
 ```bash
-rcurl --rcurl-js-rendered https://spa-site.com
+recurl --recurl-js-rendered https://spa-site.com
 ```
 
 ---
@@ -164,7 +164,7 @@ rcurl --rcurl-js-rendered https://spa-site.com
 ### Debug in Smart Mode
 
 ```bash
-rcurl --rcurl-debug https://example.com
+recurl --recurl-debug https://example.com
 ```
 
 Shows escalation steps while still performing automatic retry.
@@ -172,7 +172,7 @@ Shows escalation steps while still performing automatic retry.
 ### Debug in Strict Mode
 
 ```bash
-rcurl --rcurl-strict --rcurl-debug https://example.com
+recurl --recurl-strict --recurl-debug https://example.com
 ```
 
 Shows debug info but does not escalate.
@@ -180,7 +180,7 @@ Shows debug info but does not escalate.
 ### Force Layer + Debug
 
 ```bash
-rcurl --rcurl-impersonate chrome --rcurl-debug https://example.com
+recurl --recurl-impersonate chrome --recurl-debug https://example.com
 ```
 
 Shows debug output while forcing a specific layer.

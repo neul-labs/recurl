@@ -1,4 +1,4 @@
-# rcurl Documentation
+# recurl Documentation
 
 User-facing documentation built with [MkDocs](https://www.mkdocs.org/) and [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/).
 
@@ -76,7 +76,7 @@ mkdocs gh-deploy
 ```bash
 # Build and upload site/ directory to web server
 mkdocs build
-rsync -avz site/ user@server:/var/www/rcurl-docs/
+rsync -avz site/ user@server:/var/www/recurl-docs/
 ```
 
 ## Customization

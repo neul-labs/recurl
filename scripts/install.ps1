@@ -1,15 +1,15 @@
-# rcurl installer for Windows
-# Usage: irm https://rcurl.dev/install.ps1 | iex
+# recurl installer for Windows
+# Usage: irm https://recurl.dev/install.ps1 | iex
 
 param(
     [string]$Version = "latest",
-    [string]$InstallDir = "$env:LOCALAPPDATA\rcurl"
+    [string]$InstallDir = "$env:LOCALAPPDATA\recurl"
 )
 
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
 
-$GitHubRepo = "user/rcurl"  # TODO: update with actual repo
+$GitHubRepo = "user/recurl"  # TODO: update with actual repo
 $BaseUrl = "https://github.com/$GitHubRepo/releases"
 
 function Write-Info { param($Message) Write-Host "[info] $Message" -ForegroundColor Blue }
@@ -65,7 +65,7 @@ function Get-PowerShellProfile {
 function Main {
     Write-Host ""
     Write-Host "=====================================" -ForegroundColor Green
-    Write-Host "       rcurl installer (Windows)     " -ForegroundColor Green
+    Write-Host "       recurl installer (Windows)     " -ForegroundColor Green
     Write-Host "=====================================" -ForegroundColor Green
     Write-Host ""
 
@@ -87,12 +87,12 @@ function Main {
     Write-Info "Install directory: $InstallDir"
 
     # Create temp directory
-    $tempDir = Join-Path $env:TEMP "rcurl-install-$(Get-Random)"
+    $tempDir = Join-Path $env:TEMP "recurl-install-$(Get-Random)"
     New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
 
     try {
         # Download
-        $archiveName = "rcurl-windows-$arch.zip"
+        $archiveName = "recurl-windows-$arch.zip"
         $downloadUrl = "$BaseUrl/download/$Version/$archiveName"
         $archivePath = Join-Path $tempDir $archiveName
 
@@ -106,18 +106,18 @@ function Main {
         }
         Expand-Archive -Path $archivePath -DestinationPath $InstallDir -Force
 
-        Write-Success "rcurl installed to $InstallDir"
+        Write-Success "recurl installed to $InstallDir"
         Write-Host ""
 
         # Verify installation
         Write-Info "Verifying installation..."
-        $rcurlPath = Join-Path $InstallDir "rcurl.exe"
-        if (Test-Path $rcurlPath) {
+        $recurlPath = Join-Path $InstallDir "recurl.exe"
+        if (Test-Path $recurlPath) {
             try {
-                & $rcurlPath --version | Out-Null
-                Write-Success "rcurl binary works correctly"
+                & $recurlPath --version | Out-Null
+                Write-Success "recurl binary works correctly"
             } catch {
-                Write-Warn "rcurl binary may have issues"
+                Write-Warn "recurl binary may have issues"
             }
         }
         Write-Host ""
@@ -127,15 +127,15 @@ function Main {
         Write-Host "Configuration options" -ForegroundColor Yellow
         Write-Host "=====================================" -ForegroundColor Yellow
         Write-Host ""
-        Write-Host "To use rcurl, you have several options:"
+        Write-Host "To use recurl, you have several options:"
         Write-Host ""
-        Write-Host "  1. Call rcurl directly: $rcurlPath https://example.com"
-        Write-Host "  2. Add to PATH and use as 'rcurl'"
+        Write-Host "  1. Call recurl directly: $recurlPath https://example.com"
+        Write-Host "  2. Add to PATH and use as 'recurl'"
         Write-Host "  3. Create a PowerShell alias for 'curl'"
         Write-Host ""
 
         # Ask about PATH
-        $addPath = Read-Host "Add rcurl to PATH? [Y/n]"
+        $addPath = Read-Host "Add recurl to PATH? [Y/n]"
         if ($addPath -ne "n" -and $addPath -ne "N") {
             if (Add-ToPath $InstallDir) {
                 Write-Success "Added $InstallDir to PATH"
@@ -156,14 +156,14 @@ function Main {
                 New-Item -ItemType File -Path $profilePath -Force | Out-Null
             }
 
-            $aliasLine = "Set-Alias -Name curl -Value '$rcurlPath' -Option AllScope"
+            $aliasLine = "Set-Alias -Name curl -Value '$recurlPath' -Option AllScope"
             $profileContent = Get-Content $profilePath -Raw -ErrorAction SilentlyContinue
 
             if ($profileContent -and $profileContent.Contains("Set-Alias -Name curl")) {
                 Write-Warn "Alias already exists in profile"
             } else {
                 Add-Content -Path $profilePath -Value ""
-                Add-Content -Path $profilePath -Value "# rcurl - drop-in curl replacement with anti-bot bypass"
+                Add-Content -Path $profilePath -Value "# recurl - drop-in curl replacement with anti-bot bypass"
                 Add-Content -Path $profilePath -Value $aliasLine
                 Write-Success "Alias added to $profilePath"
             }
@@ -184,7 +184,7 @@ function Main {
         Write-Host "Add this to ~/.bashrc:"
         Write-Host ""
         $escapedPath = $InstallDir.Replace('\', '/')
-        Write-Host "    alias curl='$escapedPath/rcurl.exe'"
+        Write-Host "    alias curl='$escapedPath/recurl.exe'"
         Write-Host ""
 
         # Windows limitation note
@@ -193,7 +193,7 @@ function Main {
         Write-Host "=====================================" -ForegroundColor Yellow
         Write-Host ""
         Write-Host "curl-impersonate is not available on Windows."
-        Write-Host "rcurl will skip the impersonation layer and go directly"
+        Write-Host "recurl will skip the impersonation layer and go directly"
         Write-Host "to JS preflight when encountering anti-bot protection."
         Write-Host ""
 
@@ -203,8 +203,8 @@ function Main {
         Write-Host "=====================================" -ForegroundColor Green
         Write-Host ""
         Write-Host "Installed files:"
-        Write-Host "  $InstallDir\rcurl.exe   - main binary"
-        Write-Host "  $InstallDir\rcurld.exe  - daemon"
+        Write-Host "  $InstallDir\recurl.exe   - main binary"
+        Write-Host "  $InstallDir\recurld.exe  - daemon"
         Write-Host "  $InstallDir\bin\        - curl engine"
         Write-Host ""
         Write-Host "Documentation: https://github.com/$GitHubRepo#readme"

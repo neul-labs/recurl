@@ -1,6 +1,6 @@
 # Anti-Bot Services
 
-Reference guide to anti-bot services that rcurl can detect and bypass.
+Reference guide to anti-bot services that recurl can detect and bypass.
 
 ---
 
@@ -52,9 +52,9 @@ Reference guide to anti-bot services that rcurl can detect and bypass.
 **Example:**
 
 ```bash
-rcurl --rcurl-debug https://cloudflare-protected.com
-# [rcurl] Detected: Cloudflare
-# [rcurl] Escalating: impersonation (chrome)
+recurl --recurl-debug https://cloudflare-protected.com
+# [recurl] Detected: Cloudflare
+# [recurl] Escalating: impersonation (chrome)
 # ... or JS preflight if needed
 ```
 
@@ -251,8 +251,8 @@ rcurl --rcurl-debug https://cloudflare-protected.com
 
 | Protection | Recommended Approach |
 |------------|---------------------|
-| TLS Fingerprinting | `--rcurl-impersonate chrome` |
-| JavaScript Challenge | `--rcurl-js` |
+| TLS Fingerprinting | `--recurl-impersonate chrome` |
+| JavaScript Challenge | `--recurl-js` |
 | Rate Limiting | Add delays, use proxy rotation |
 | CAPTCHA | Manual solving, CAPTCHA services |
 
@@ -270,11 +270,11 @@ rcurl --rcurl-debug https://cloudflare-protected.com
 
 ## Detection Debug
 
-See which service rcurl detects:
+See which service recurl detects:
 
 ```bash
-rcurl --rcurl-debug https://example.com 2>&1 | grep -i detected
-# [rcurl] Detected: Cloudflare
+recurl --recurl-debug https://example.com 2>&1 | grep -i detected
+# [recurl] Detected: Cloudflare
 ```
 
 ### Manual Pattern Check
@@ -292,25 +292,25 @@ curl -s https://example.com | grep -i datadome
 
 1. **Use JS Preflight from start**
    ```bash
-   rcurl --rcurl-js https://difficult-site.com
+   recurl --recurl-js https://difficult-site.com
    ```
 
 2. **Wait for specific content**
    ```bash
-   rcurl --rcurl-js --rcurl-js-wait ".main-content" https://site.com
+   recurl --recurl-js --recurl-js-wait ".main-content" https://site.com
    ```
 
 3. **Increase timeout**
    ```bash
-   rcurl --rcurl-js --rcurl-js-timeout 60000 https://slow-site.com
+   recurl --recurl-js --recurl-js-timeout 60000 https://slow-site.com
    ```
 
 4. **Check rendered HTML**
    ```bash
-   rcurl --rcurl-js-rendered https://spa-site.com
+   recurl --recurl-js-rendered https://spa-site.com
    ```
 
 5. **Combine with proxy** (if IP blocked)
    ```bash
-   rcurl --rcurl-js -x http://proxy:8080 https://site.com
+   recurl --recurl-js -x http://proxy:8080 https://site.com
    ```

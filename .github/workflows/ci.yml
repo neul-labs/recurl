@@ -36,12 +36,12 @@ jobs:
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Build rcurl
+      - name: Build recurl
         run: cargo build --release
 
-      - name: Build rcurld (Unix)
+      - name: Build recurld (Unix)
         if: runner.os != 'Windows'
-        run: cargo build --release --bin rcurld --features daemon
+        run: cargo build --release --bin recurld --features daemon
 
       - name: Run unit tests
         run: cargo test
@@ -50,13 +50,13 @@ jobs:
         if: runner.os != 'Windows'
         run: cargo test --test conformance -- --test-threads=2
         env:
-          RCURL_PATH: ./target/release/rcurl
+          RECURL_PATH: ./target/release/recurl
 
       - name: Run conformance tests (Windows)
         if: runner.os == 'Windows'
         run: cargo test --test conformance -- --test-threads=2
         env:
-          RCURL_PATH: ./target/release/rcurl.exe
+          RECURL_PATH: ./target/release/recurl.exe
 
   lint:
     name: Lint
@@ -85,19 +85,19 @@ jobs:
         include:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-            artifact: rcurl-linux-x86_64
+            artifact: recurl-linux-x86_64
           - os: ubuntu-latest
             target: aarch64-unknown-linux-gnu
-            artifact: rcurl-linux-aarch64
+            artifact: recurl-linux-aarch64
           - os: macos-latest
             target: x86_64-apple-darwin
-            artifact: rcurl-darwin-x86_64
+            artifact: recurl-darwin-x86_64
           - os: macos-latest
             target: aarch64-apple-darwin
-            artifact: rcurl-darwin-aarch64
+            artifact: recurl-darwin-aarch64
           - os: windows-latest
             target: x86_64-pc-windows-msvc
-            artifact: rcurl-windows-x86_64
+            artifact: recurl-windows-x86_64
 
     steps:
       - uses: actions/checkout@v4
@@ -111,28 +111,28 @@ jobs:
         if: matrix.target == 'aarch64-unknown-linux-gnu'
         run: cargo install cross --git https://github.com/cross-rs/cross
 
-      - name: Build rcurl (native)
+      - name: Build recurl (native)
         if: matrix.target != 'aarch64-unknown-linux-gnu'
         run: cargo build --release --target ${{ matrix.target }}
 
-      - name: Build rcurl (cross)
+      - name: Build recurl (cross)
         if: matrix.target == 'aarch64-unknown-linux-gnu'
         run: cross build --release --target ${{ matrix.target }}
 
-      - name: Build rcurld (Unix native)
+      - name: Build recurld (Unix native)
         if: runner.os != 'Windows' && matrix.target != 'aarch64-unknown-linux-gnu'
-        run: cargo build --release --target ${{ matrix.target }} --bin rcurld --features daemon
+        run: cargo build --release --target ${{ matrix.target }} --bin recurld --features daemon
 
-      - name: Build rcurld (cross)
+      - name: Build recurld (cross)
         if: matrix.target == 'aarch64-unknown-linux-gnu'
-        run: cross build --release --target ${{ matrix.target }} --bin rcurld --features daemon
+        run: cross build --release --target ${{ matrix.target }} --bin recurld --features daemon
 
       - name: Package (Unix)
         if: runner.os != 'Windows'
         run: |
           mkdir -p dist/${{ matrix.artifact }}/bin
-          cp target/${{ matrix.target }}/release/rcurl dist/${{ matrix.artifact }}/bin/
-          cp target/${{ matrix.target }}/release/rcurld dist/${{ matrix.artifact }}/bin/ || true
+          cp target/${{ matrix.target }}/release/recurl dist/${{ matrix.artifact }}/bin/
+          cp target/${{ matrix.target }}/release/recurld dist/${{ matrix.artifact }}/bin/ || true
           cp scripts/install.sh dist/${{ matrix.artifact }}/
           cp README.md dist/${{ matrix.artifact }}/
           cp LICENSE dist/${{ matrix.artifact }}/ || true
@@ -146,7 +146,7 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path dist/${{ matrix.artifact }}/bin
-          Copy-Item target/${{ matrix.target }}/release/rcurl.exe dist/${{ matrix.artifact }}/bin/
+          Copy-Item target/${{ matrix.target }}/release/recurl.exe dist/${{ matrix.artifact }}/bin/
           Copy-Item scripts/install.ps1 dist/${{ matrix.artifact }}/
           Copy-Item README.md dist/${{ matrix.artifact }}/
           if (Test-Path LICENSE) { Copy-Item LICENSE dist/${{ matrix.artifact }}/ }

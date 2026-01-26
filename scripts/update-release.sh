@@ -17,7 +17,7 @@ VERSION_NUM="${VERSION#v}"
 echo "Updating package manifests for version $VERSION_NUM..."
 
 # GitHub release URL base
-RELEASE_URL="https://github.com/user/rcurl/releases/download/$VERSION"
+RELEASE_URL="https://github.com/user/recurl/releases/download/$VERSION"
 
 # Download and compute checksums
 echo "Downloading release artifacts..."
@@ -27,11 +27,11 @@ trap "rm -rf $TEMP_DIR" EXIT
 
 # Define platforms
 declare -A PLATFORMS=(
-    ["darwin-aarch64"]="rcurl-darwin-aarch64.tar.gz"
-    ["darwin-x86_64"]="rcurl-darwin-x86_64.tar.gz"
-    ["linux-aarch64"]="rcurl-linux-aarch64.tar.gz"
-    ["linux-x86_64"]="rcurl-linux-x86_64.tar.gz"
-    ["windows-x86_64"]="rcurl-windows-x86_64.zip"
+    ["darwin-aarch64"]="recurl-darwin-aarch64.tar.gz"
+    ["darwin-x86_64"]="recurl-darwin-x86_64.tar.gz"
+    ["linux-aarch64"]="recurl-linux-aarch64.tar.gz"
+    ["linux-x86_64"]="recurl-linux-x86_64.tar.gz"
+    ["windows-x86_64"]="recurl-windows-x86_64.zip"
 )
 
 declare -A CHECKSUMS
@@ -53,7 +53,7 @@ done
 echo ""
 echo "Updating Homebrew formula..."
 
-HOMEBREW_FILE="packaging/homebrew/rcurl.rb"
+HOMEBREW_FILE="packaging/homebrew/recurl.rb"
 if [ -f "$HOMEBREW_FILE" ]; then
     sed -i "s/version \"[^\"]*\"/version \"$VERSION_NUM\"/" "$HOMEBREW_FILE"
 
@@ -76,7 +76,7 @@ fi
 # Update Scoop manifest
 echo "Updating Scoop manifest..."
 
-SCOOP_FILE="packaging/scoop/rcurl.json"
+SCOOP_FILE="packaging/scoop/recurl.json"
 if [ -f "$SCOOP_FILE" ]; then
     sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"$VERSION_NUM\"/" "$SCOOP_FILE"
     sed -i "s|/v[0-9.]*-*[a-z0-9]*/|/$VERSION/|g" "$SCOOP_FILE"

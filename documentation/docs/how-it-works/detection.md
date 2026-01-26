@@ -1,12 +1,12 @@
 # Detection
 
-How rcurl detects anti-bot protection and blocking responses.
+How recurl detects anti-bot protection and blocking responses.
 
 ---
 
 ## Detection Overview
 
-rcurl analyzes responses to identify when a request has been blocked:
+recurl analyzes responses to identify when a request has been blocked:
 
 1. **HTTP Status Code** - Check for blocking status codes
 2. **Response Body** - Scan for anti-bot service signatures
@@ -35,7 +35,7 @@ rcurl analyzes responses to identify when a request has been blocked:
 
 ## Anti-Bot Service Detection
 
-rcurl recognizes signatures from major anti-bot services:
+recurl recognizes signatures from major anti-bot services:
 
 ### Cloudflare
 
@@ -174,13 +174,13 @@ For unknown or custom protections:
 
 ## Detection in Debug Mode
 
-Use `--rcurl-debug` to see detection results:
+Use `--recurl-debug` to see detection results:
 
 ```bash
-rcurl --rcurl-debug https://protected-site.com
-# [rcurl] curl_engine: 403
-# [rcurl] Detected: Cloudflare challenge
-# [rcurl] Escalating: impersonation (chrome)
+recurl --recurl-debug https://protected-site.com
+# [recurl] curl_engine: 403
+# [recurl] Detected: Cloudflare challenge
+# [recurl] Escalating: impersonation (chrome)
 ```
 
 ### Detection Output
@@ -214,7 +214,7 @@ rcurl --rcurl-debug https://protected-site.com
 
 ## Adding Custom Detection
 
-rcurl's detection is pattern-based and can be extended. The detection patterns are in:
+recurl's detection is pattern-based and can be extended. The detection patterns are in:
 
 ```
 src/detection/patterns.rs
@@ -234,7 +234,7 @@ const SERVICE_PATTERNS: &[&str] = &[
 
 ## False Positives
 
-Sometimes legitimate content may contain anti-bot patterns. rcurl only escalates on:
+Sometimes legitimate content may contain anti-bot patterns. recurl only escalates on:
 
 1. Status code 403, 429, or 503 **AND**
 2. Body pattern match
@@ -243,12 +243,12 @@ A 200 response with anti-bot patterns in content won't trigger escalation.
 
 ### Override Detection
 
-If rcurl is incorrectly detecting a block:
+If recurl is incorrectly detecting a block:
 
 ```bash
 # Use strict mode to skip detection
-rcurl --rcurl-strict https://example.com
+recurl --recurl-strict https://example.com
 
 # Force specific layer regardless of detection
-rcurl --rcurl-js https://example.com
+recurl --recurl-js https://example.com
 ```

@@ -1,12 +1,12 @@
 # Platform Support
 
-Detailed platform compatibility matrix for rcurl.
+Detailed platform compatibility matrix for recurl.
 
 ---
 
 ## Support Matrix
 
-| Platform | Arch | rcurl | Impersonation | JS Preflight | Chromium Auto-Download |
+| Platform | Arch | recurl | Impersonation | JS Preflight | Chromium Auto-Download |
 |----------|------|-------|---------------|--------------|------------------------|
 | Linux | x86_64 | ✓ | ✓ | ✓ | ✓ |
 | Linux | aarch64 | ✓ | ✓ | ✓ | Manual* |
@@ -27,10 +27,10 @@ Detailed platform compatibility matrix for rcurl.
 
 ```bash
 # Install
-curl -fsSL https://rcurl.dev/install.sh | bash
+curl -fsSL https://recurl.dev/install.sh | bash
 
 # Verify
-rcurl --version
+recurl --version
 ```
 
 ### aarch64 (ARM 64-bit)
@@ -38,8 +38,8 @@ rcurl --version
 **Partial support.** Chromium auto-download not available.
 
 ```bash
-# Install rcurl
-curl -fsSL https://rcurl.dev/install.sh | bash
+# Install recurl
+curl -fsSL https://recurl.dev/install.sh | bash
 
 # Install Chromium manually
 # Ubuntu/Debian:
@@ -52,7 +52,7 @@ sudo dnf install -y chromium
 sudo pacman -S chromium
 ```
 
-rcurl will automatically detect system Chromium at:
+recurl will automatically detect system Chromium at:
 
 - `/usr/bin/chromium`
 - `/usr/bin/chromium-browser`
@@ -69,10 +69,10 @@ rcurl will automatically detect system Chromium at:
 
 ```bash
 # Install via Homebrew
-brew install rcurl/tap/rcurl
+brew install recurl/tap/recurl
 
 # Or via script
-curl -fsSL https://rcurl.dev/install.sh | bash
+curl -fsSL https://recurl.dev/install.sh | bash
 ```
 
 ### x86_64 (Intel)
@@ -91,17 +91,17 @@ Same installation as Apple Silicon.
 
 ```powershell
 # Install via Scoop
-scoop bucket add rcurl https://github.com/user/rcurl
-scoop install rcurl
+scoop bucket add recurl https://github.com/user/recurl
+scoop install recurl
 
 # Or via script
-irm https://rcurl.dev/install.ps1 | iex
+irm https://recurl.dev/install.ps1 | iex
 ```
 
 **Notes:**
 
 - curl-impersonate is not available for Windows
-- rcurl skips directly from curl_engine to JS preflight
+- recurl skips directly from curl_engine to JS preflight
 - Daemon uses named pipes instead of Unix sockets
 
 ### i686 (32-bit)
@@ -134,17 +134,17 @@ irm https://rcurl.dev/install.ps1 | iex
 
 | Platform | Transport | Path |
 |----------|-----------|------|
-| Linux | Unix socket | `/tmp/rcurl.<uid>.sock` |
-| macOS | Unix socket | `/tmp/rcurl.<uid>.sock` |
-| Windows | Named pipe | `\\.\pipe\rcurl-<username>` |
+| Linux | Unix socket | `/tmp/recurl.<uid>.sock` |
+| macOS | Unix socket | `/tmp/recurl.<uid>.sock` |
+| Windows | Named pipe | `\\.\pipe\recurl-<username>` |
 
 ### Chromium Cache Location
 
 | Platform | Path |
 |----------|------|
-| Linux | `~/.local/share/rcurl/chromium/` |
-| macOS | `~/Library/Application Support/rcurl/chromium/` |
-| Windows | `%LOCALAPPDATA%\rcurl\chromium\` |
+| Linux | `~/.local/share/recurl/chromium/` |
+| macOS | `~/Library/Application Support/recurl/chromium/` |
+| Windows | `%LOCALAPPDATA%\recurl\chromium\` |
 
 ---
 
@@ -154,15 +154,15 @@ Docker support is available for containerized usage:
 
 ```bash
 # Pull official image
-docker pull ghcr.io/user/rcurl
+docker pull ghcr.io/user/recurl
 
 # Run request
-docker run --rm ghcr.io/user/rcurl https://example.com
+docker run --rm ghcr.io/user/recurl https://example.com
 ```
 
 The Docker image includes:
 
-- rcurl and rcurld binaries
+- recurl and recurld binaries
 - curl_engine
 - curl-impersonate binaries (Linux x86_64)
 - Pre-downloaded Chromium
@@ -215,7 +215,7 @@ The Docker image includes:
 
 - No curl-impersonate support (no TLS fingerprint mimicry)
 - Impersonation layer skipped entirely
-- `--rcurl-impersonate` flag has no effect
+- `--recurl-impersonate` flag has no effect
 - JS preflight available as primary bypass
 
 ### All Platforms
@@ -235,6 +235,6 @@ uname -a
 # Check Chromium availability
 which chromium chromium-browser google-chrome
 
-# Test rcurl features
-rcurl --rcurl-debug https://httpbin.org/get
+# Test recurl features
+recurl --recurl-debug https://httpbin.org/get
 ```

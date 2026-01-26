@@ -1,7 +1,7 @@
 //! Integration tests for headless Chrome
 //!
-//! These tests use rcurl's auto-download feature for Chromium.
-//! On first run, Chromium will be downloaded to ~/.local/share/rcurl/chromium/
+//! These tests use recurl's auto-download feature for Chromium.
+//! On first run, Chromium will be downloaded to ~/.local/share/recurl/chromium/
 //!
 //! Run with: cargo test --test browser_integration -- --test-threads=1
 //!
@@ -22,7 +22,7 @@ use std::time::Duration;
 async fn get_chromium_path() -> Result<PathBuf, Box<dyn std::error::Error>> {
     let cache_dir = dirs::data_local_dir()
         .unwrap_or_else(|| PathBuf::from("."))
-        .join("rcurl")
+        .join("recurl")
         .join("chromium");
 
     // Check for existing chrome

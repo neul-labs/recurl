@@ -1,15 +1,15 @@
 # Compliance
 
-rcurl has two modes with different compliance goals:
+recurl has two modes with different compliance goals:
 
 | Mode | Goal |
 |------|------|
 | Smart (default) | Get the content, transparently bypass anti-bot |
-| Strict (`--rcurl-strict`) | Byte-for-byte identical to `curl_engine` |
+| Strict (`--recurl-strict`) | Byte-for-byte identical to `curl_engine` |
 
 ## Strict mode invariants
 
-When `--rcurl-strict` or `RCURL_STRICT=1` is set:
+When `--recurl-strict` or `RCURL_STRICT=1` is set:
 
 - stdout byte-for-byte identical to `curl_engine`
 - stderr byte-for-byte identical (progress meter, verbose, trace)
@@ -28,11 +28,11 @@ Default mode prioritizes successful content retrieval:
 
 ## Conformance harness
 
-Tests `rcurl --rcurl-strict` against `curl_engine`:
+Tests `recurl --recurl-strict` against `curl_engine`:
 
 ```
 ┌─────────────┐     ┌─────────────┐
-│ curl_engine │     │rcurl --rcurl│
+│ curl_engine │     │recurl --recurl│
 │             │     │   -strict   │
 └──────┬──────┘     └──────┬──────┘
        │                   │

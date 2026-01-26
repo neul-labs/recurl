@@ -1,13 +1,13 @@
 # First Request
 
-Learn how rcurl handles different scenarios.
+Learn how recurl handles different scenarios.
 
 ---
 
 ## Basic Request
 
 ```bash
-rcurl https://httpbin.org/get
+recurl https://httpbin.org/get
 ```
 
 This works exactly like curl. If the request succeeds, you get the response.
@@ -16,17 +16,17 @@ This works exactly like curl. If the request succeeds, you get the response.
 
 ## Understanding Debug Output
 
-Add `--rcurl-debug` to see what rcurl is doing:
+Add `--recurl-debug` to see what recurl is doing:
 
 ```bash
-rcurl --rcurl-debug https://httpbin.org/get
+recurl --recurl-debug https://httpbin.org/get
 ```
 
 Output:
 
 ```
-[rcurl] Starting request to https://httpbin.org/get
-[rcurl] curl_engine: 200 OK
+[recurl] Starting request to https://httpbin.org/get
+[recurl] curl_engine: 200 OK
 {
   "args": {},
   "headers": {
@@ -45,21 +45,21 @@ No escalation needed - the request succeeded on the first try.
 Try a site with bot protection:
 
 ```bash
-rcurl --rcurl-debug https://nowsecure.nl
+recurl --recurl-debug https://nowsecure.nl
 ```
 
 You might see:
 
 ```
-[rcurl] Starting request to https://nowsecure.nl
-[rcurl] curl_engine: 403 Cloudflare
-[rcurl] Escalating: impersonation (chrome)
-[rcurl] curl_chrome: 200 OK
+[recurl] Starting request to https://nowsecure.nl
+[recurl] curl_engine: 403 Cloudflare
+[recurl] Escalating: impersonation (chrome)
+[recurl] curl_chrome: 200 OK
 <!DOCTYPE html>
 ...
 ```
 
-rcurl automatically retried with browser TLS fingerprinting and succeeded.
+recurl automatically retried with browser TLS fingerprinting and succeeded.
 
 ---
 
@@ -68,24 +68,24 @@ rcurl automatically retried with browser TLS fingerprinting and succeeded.
 Some sites require JavaScript execution:
 
 ```bash
-rcurl --rcurl-debug https://site-with-turnstile.com
+recurl --recurl-debug https://site-with-turnstile.com
 ```
 
 ```
-[rcurl] Starting request
-[rcurl] curl_engine: 403 Cloudflare
-[rcurl] Escalating: impersonation (chrome)
-[rcurl] curl_chrome: 403 JS challenge required
-[rcurl] Escalating: JS preflight
-[rcurl] First run: downloading Chromium browser...
-[rcurl] Chromium ready.
-[rcurl] JS preflight: starting
-[rcurl] JS preflight: injecting stealth patches
-[rcurl] JS preflight: challenge detected, waiting...
-[rcurl] JS preflight: success
-[rcurl] JS preflight: extracted 3 cookies
-[rcurl] Replaying with cookies
-[rcurl] curl_engine: 200 OK
+[recurl] Starting request
+[recurl] curl_engine: 403 Cloudflare
+[recurl] Escalating: impersonation (chrome)
+[recurl] curl_chrome: 403 JS challenge required
+[recurl] Escalating: JS preflight
+[recurl] First run: downloading Chromium browser...
+[recurl] Chromium ready.
+[recurl] JS preflight: starting
+[recurl] JS preflight: injecting stealth patches
+[recurl] JS preflight: challenge detected, waiting...
+[recurl] JS preflight: success
+[recurl] JS preflight: extracted 3 cookies
+[recurl] Replaying with cookies
+[recurl] curl_engine: 200 OK
 ```
 
 The first run downloads Chromium automatically. Subsequent requests use the cached browser.
@@ -98,21 +98,21 @@ All curl flags work as expected:
 
 ```bash
 # POST with data
-rcurl -X POST -d '{"key": "value"}' \
+recurl -X POST -d '{"key": "value"}' \
     -H "Content-Type: application/json" \
     https://httpbin.org/post
 
 # Save to file
-rcurl -o output.html https://example.com
+recurl -o output.html https://example.com
 
 # Follow redirects
-rcurl -L https://httpbin.org/redirect/3
+recurl -L https://httpbin.org/redirect/3
 
 # Custom headers
-rcurl -H "Authorization: Bearer token123" https://api.example.com
+recurl -H "Authorization: Bearer token123" https://api.example.com
 
 # Verbose output
-rcurl -v https://example.com
+recurl -v https://example.com
 ```
 
 ---
@@ -123,30 +123,30 @@ rcurl -v https://example.com
 
 ```bash
 # Skip straight to impersonation (Linux/macOS only)
-rcurl --rcurl-impersonate chrome https://example.com
+recurl --recurl-impersonate chrome https://example.com
 
 # Available profiles: chrome, firefox, safari, edge
-rcurl --rcurl-impersonate firefox https://example.com
+recurl --recurl-impersonate firefox https://example.com
 ```
 
 ### Force JS Preflight
 
 ```bash
 # Skip straight to Chromium
-rcurl --rcurl-js https://spa-site.com
+recurl --recurl-js https://spa-site.com
 
 # Wait for specific element
-rcurl --rcurl-js --rcurl-js-wait ".content-loaded" https://spa-site.com
+recurl --recurl-js --recurl-js-wait ".content-loaded" https://spa-site.com
 
 # Custom timeout
-rcurl --rcurl-js --rcurl-js-timeout 60000 https://slow-site.com
+recurl --recurl-js --recurl-js-timeout 60000 https://slow-site.com
 ```
 
 ### Get Rendered HTML
 
 ```bash
 # Return DOM after JS execution instead of curl replay
-rcurl --rcurl-js-rendered https://spa-site.com
+recurl --recurl-js-rendered https://spa-site.com
 ```
 
 ---
@@ -156,16 +156,16 @@ rcurl --rcurl-js-rendered https://spa-site.com
 Disable all fallback for curl-identical behavior:
 
 ```bash
-rcurl --rcurl-strict https://example.com
+recurl --recurl-strict https://example.com
 ```
 
 Or via environment variable:
 
 ```bash
-RCURL_STRICT=1 rcurl https://example.com
+RCURL_STRICT=1 recurl https://example.com
 ```
 
-In strict mode, rcurl is byte-for-byte identical to curl.
+In strict mode, recurl is byte-for-byte identical to curl.
 
 ---
 
@@ -175,25 +175,25 @@ In strict mode, rcurl is byte-for-byte identical to curl.
 
 ```bash
 # Usually work without escalation
-rcurl -H "Authorization: Bearer $TOKEN" \
+recurl -H "Authorization: Bearer $TOKEN" \
     https://api.example.com/data
 ```
 
 ### Protected Websites
 
 ```bash
-# Let rcurl handle it automatically
-rcurl https://protected-site.com
+# Let recurl handle it automatically
+recurl https://protected-site.com
 
 # Or force JS if you know it's needed
-rcurl --rcurl-js https://protected-site.com
+recurl --recurl-js https://protected-site.com
 ```
 
 ### Single-Page Applications
 
 ```bash
 # Get rendered content
-rcurl --rcurl-js-rendered --rcurl-js-wait "#app-loaded" \
+recurl --recurl-js-rendered --recurl-js-wait "#app-loaded" \
     https://spa-site.com
 ```
 
@@ -201,7 +201,7 @@ rcurl --rcurl-js-rendered --rcurl-js-wait "#app-loaded" \
 
 ```bash
 # Maximum verbosity
-rcurl --rcurl-debug -v https://problematic-site.com
+recurl --recurl-debug -v https://problematic-site.com
 ```
 
 ---

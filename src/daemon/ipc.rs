@@ -9,11 +9,11 @@ use std::path::PathBuf;
 pub fn get_socket_path() -> PathBuf {
     if cfg!(windows) {
         // Windows named pipe
-        PathBuf::from(format!(r"\\.\pipe\rcurl-{}", whoami()))
+        PathBuf::from(format!(r"\\.\pipe\recurl-{}", whoami()))
     } else {
         // Unix socket
         let uid = unsafe { libc::getuid() };
-        PathBuf::from(format!("/tmp/rcurl.{}.sock", uid))
+        PathBuf::from(format!("/tmp/recurl.{}.sock", uid))
     }
 }
 
@@ -284,9 +284,9 @@ mod tests {
     fn test_socket_path() {
         let path = get_socket_path();
         if cfg!(windows) {
-            assert!(path.to_string_lossy().contains(r"\\.\pipe\rcurl-"));
+            assert!(path.to_string_lossy().contains(r"\\.\pipe\recurl-"));
         } else {
-            assert!(path.to_string_lossy().contains("/tmp/rcurl."));
+            assert!(path.to_string_lossy().contains("/tmp/recurl."));
             assert!(path.to_string_lossy().contains(".sock"));
         }
     }

@@ -1000,7 +1000,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "rcurl"
+name = "recurl"
 version = "0.1.0"
 dependencies = [
  "chromiumoxide",

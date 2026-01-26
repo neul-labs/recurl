@@ -1,6 +1,6 @@
 # Environment Variables
 
-Configure rcurl behavior through environment variables.
+Configure recurl behavior through environment variables.
 
 ---
 
@@ -22,11 +22,11 @@ Enable strict mode (no fallback).
 # Enable strict mode
 export RCURL_STRICT=1
 
-# All rcurl commands now run in strict mode
-rcurl https://example.com
+# All recurl commands now run in strict mode
+recurl https://example.com
 ```
 
-Equivalent to `--rcurl-strict` flag.
+Equivalent to `--recurl-strict` flag.
 
 ### Values
 
@@ -44,13 +44,13 @@ Enable debug output.
 export RCURL_DEBUG=1
 
 # See escalation steps
-rcurl https://protected-site.com
-# [rcurl] curl_engine: 403 Cloudflare
-# [rcurl] Escalating: impersonation
+recurl https://protected-site.com
+# [recurl] curl_engine: 403 Cloudflare
+# [recurl] Escalating: impersonation
 # ...
 ```
 
-Equivalent to `--rcurl-debug` flag.
+Equivalent to `--recurl-debug` flag.
 
 ### Values
 
@@ -68,7 +68,7 @@ Set the daemon idle timeout in milliseconds.
 export RCURL_DAEMON_IDLE_MS=300000
 
 # Run JS preflight requests
-rcurl --rcurl-js https://example.com
+recurl --recurl-js https://example.com
 ```
 
 The daemon shuts down after this period of inactivity.
@@ -97,7 +97,7 @@ Add to your shell profile for persistent configuration:
 === "Bash (~/.bashrc)"
 
     ```bash
-    # rcurl configuration
+    # recurl configuration
     export RCURL_DEBUG=0
     export RCURL_DAEMON_IDLE_MS=120000
     ```
@@ -105,7 +105,7 @@ Add to your shell profile for persistent configuration:
 === "Zsh (~/.zshrc)"
 
     ```bash
-    # rcurl configuration
+    # recurl configuration
     export RCURL_DEBUG=0
     export RCURL_DAEMON_IDLE_MS=120000
     ```
@@ -113,7 +113,7 @@ Add to your shell profile for persistent configuration:
 === "PowerShell ($PROFILE)"
 
     ```powershell
-    # rcurl configuration
+    # recurl configuration
     $env:RCURL_DEBUG = "0"
     $env:RCURL_DAEMON_IDLE_MS = "120000"
     ```
@@ -124,10 +124,10 @@ Set for a single command:
 
 ```bash
 # Debug this request only
-RCURL_DEBUG=1 rcurl https://example.com
+RCURL_DEBUG=1 recurl https://example.com
 
 # Strict mode for this request
-RCURL_STRICT=1 rcurl https://example.com
+RCURL_STRICT=1 recurl https://example.com
 ```
 
 ### Script Usage
@@ -143,7 +143,7 @@ export RCURL_DAEMON_IDLE_MS=300000
 
 # Multiple requests
 for url in "${urls[@]}"; do
-    rcurl --rcurl-js "$url" -o "output_$(basename $url).html"
+    recurl --recurl-js "$url" -o "output_$(basename $url).html"
 done
 ```
 
@@ -155,11 +155,11 @@ Command-line flags take priority over environment variables:
 
 ```bash
 # RCURL_DEBUG=1 is set
-# But --rcurl-debug is not passed
-rcurl https://example.com  # Debug enabled (from env)
+# But --recurl-debug is not passed
+recurl https://example.com  # Debug enabled (from env)
 
 # Flag overrides environment
-RCURL_DEBUG=1 rcurl --rcurl-strict https://example.com  # No debug (strict mode)
+RCURL_DEBUG=1 recurl --recurl-strict https://example.com  # No debug (strict mode)
 ```
 
 ---
@@ -167,9 +167,9 @@ RCURL_DEBUG=1 rcurl --rcurl-strict https://example.com  # No debug (strict mode)
 ## Checking Current Settings
 
 ```bash
-# Show all rcurl environment variables
+# Show all recurl environment variables
 env | grep RCURL
 
 # Test with debug to see behavior
-rcurl --rcurl-debug https://httpbin.org/get 2>&1 | head -5
+recurl --recurl-debug https://httpbin.org/get 2>&1 | head -5
 ```

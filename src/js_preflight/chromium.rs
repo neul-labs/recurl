@@ -2,17 +2,17 @@
 //!
 //! Handles automatic download and caching of the Chromium browser binary.
 //! Chromium is downloaded on first use and cached in:
-//!   - Linux: ~/.local/share/rcurl/chromium/
-//!   - macOS: ~/Library/Application Support/rcurl/chromium/
-//!   - Windows: %LOCALAPPDATA%\rcurl\chromium\
+//!   - Linux: ~/.local/share/recurl/chromium/
+//!   - macOS: ~/Library/Application Support/recurl/chromium/
+//!   - Windows: %LOCALAPPDATA%\recurl\chromium\
 
 use chromiumoxide_fetcher::{BrowserFetcher, BrowserFetcherOptions};
 use std::path::PathBuf;
 
-/// Get the rcurl data directory for storing Chromium
+/// Get the recurl data directory for storing Chromium
 pub fn get_chromium_cache_dir() -> PathBuf {
     let base = dirs::data_local_dir().unwrap_or_else(|| PathBuf::from("."));
-    base.join("rcurl").join("chromium")
+    base.join("recurl").join("chromium")
 }
 
 /// Get path to the Chromium executable, downloading if necessary
@@ -22,7 +22,7 @@ pub async fn ensure_chromium(debug: bool) -> Result<PathBuf, Box<dyn std::error:
     // Check if we already have a downloaded Chromium
     if let Some(path) = find_existing_chromium(&cache_dir) {
         if debug {
-            eprintln!("[rcurl] Using cached Chromium: {}", path.display());
+            eprintln!("[recurl] Using cached Chromium: {}", path.display());
         }
         return Ok(path);
     }
@@ -30,16 +30,16 @@ pub async fn ensure_chromium(debug: bool) -> Result<PathBuf, Box<dyn std::error:
     // Check for system-installed Chrome first
     if let Some(path) = find_system_chrome() {
         if debug {
-            eprintln!("[rcurl] Using system Chrome: {}", path.display());
+            eprintln!("[recurl] Using system Chrome: {}", path.display());
         }
         return Ok(path);
     }
 
     // Need to download Chromium
     if debug {
-        eprintln!("[rcurl] Downloading Chromium to {}...", cache_dir.display());
+        eprintln!("[recurl] Downloading Chromium to {}...", cache_dir.display());
     } else {
-        eprintln!("[rcurl] First run: downloading Chromium browser (this may take a minute)...");
+        eprintln!("[recurl] First run: downloading Chromium browser (this may take a minute)...");
     }
 
     download_chromium(&cache_dir, debug).await
@@ -180,7 +180,7 @@ fn get_install_instructions() -> &'static str {
          Arch Linux:\n\
            sudo pacman -S chromium\n\
          \n\
-         After installation, rcurl will automatically detect it."
+         After installation, recurl will automatically detect it."
     } else if os == "linux" {
         "Install Chromium: sudo apt install chromium-browser"
     } else if os == "macos" {
@@ -205,7 +205,7 @@ async fn download_chromium(
 ) -> Result<PathBuf, Box<dyn std::error::Error + Send + Sync>> {
     // Check for unsupported platforms first
     if is_unsupported_platform() {
-        eprintln!("[rcurl] {}", get_install_instructions());
+        eprintln!("[recurl] {}", get_install_instructions());
         return Err("Chromium auto-download not available for this platform".into());
     }
 
@@ -222,15 +222,15 @@ async fn download_chromium(
     match fetcher.fetch().await {
         Ok(info) => {
             if debug {
-                eprintln!("[rcurl] Chromium downloaded to: {}", info.executable_path.display());
+                eprintln!("[recurl] Chromium downloaded to: {}", info.executable_path.display());
             } else {
-                eprintln!("[rcurl] Chromium ready.");
+                eprintln!("[recurl] Chromium ready.");
             }
             Ok(info.executable_path)
         }
         Err(e) => {
             // Provide helpful error message
-            eprintln!("[rcurl] {}", get_install_instructions());
+            eprintln!("[recurl] {}", get_install_instructions());
             Err(format!("Failed to download Chromium: {}", e).into())
         }
     }
@@ -249,7 +249,7 @@ mod tests {
     #[test]
     fn test_cache_dir() {
         let dir = get_chromium_cache_dir();
-        assert!(dir.to_string_lossy().contains("rcurl"));
+        assert!(dir.to_string_lossy().contains("recurl"));
         assert!(dir.to_string_lossy().contains("chromium"));
     }
 

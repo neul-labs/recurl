@@ -43,7 +43,7 @@ pub async fn run_preflight(
     let chrome_path = ensure_chromium(options.debug).await?;
 
     if options.debug {
-        eprintln!("[rcurl] Using Chromium at: {}", chrome_path.display());
+        eprintln!("[recurl] Using Chromium at: {}", chrome_path.display());
     }
 
     // Build browser config with stealth settings
@@ -105,7 +105,7 @@ pub async fn run_preflight(
     let handler_task = tokio::spawn(async move {
         while let Some(event) = handler.next().await {
             if let Err(e) = event {
-                eprintln!("[rcurl] Browser event error: {}", e);
+                eprintln!("[recurl] Browser event error: {}", e);
             }
         }
     });
@@ -136,7 +136,7 @@ async fn run_preflight_inner(
 
     // Inject stealth patches before navigation
     if options.debug {
-        eprintln!("[rcurl] JS preflight: injecting stealth patches");
+        eprintln!("[recurl] JS preflight: injecting stealth patches");
     }
     let stealth_js = stealth::get_all_patches();
     page.evaluate(stealth_js)
@@ -160,7 +160,7 @@ async fn run_preflight_inner(
     // If a wait selector is specified, wait for it
     if let Some(ref selector) = options.wait_selector {
         if options.debug {
-            eprintln!("[rcurl] JS preflight: waiting for selector '{}'", selector);
+            eprintln!("[recurl] JS preflight: waiting for selector '{}'", selector);
         }
         timeout(
             wait_duration,
@@ -181,7 +181,7 @@ async fn run_preflight_inner(
                 || html.contains("challenge-platform")
             {
                 if options.debug {
-                    eprintln!("[rcurl] JS preflight: detected challenge, waiting longer...");
+                    eprintln!("[recurl] JS preflight: detected challenge, waiting longer...");
                 }
                 tokio::time::sleep(Duration::from_secs(5)).await;
             }

@@ -1,6 +1,6 @@
-//! Daemon client for rcurl
+//! Daemon client for recurl
 //!
-//! Connects to rcurld for fast JS preflight operations.
+//! Connects to recurld for fast JS preflight operations.
 
 use std::collections::HashMap;
 use std::io;
@@ -56,10 +56,10 @@ pub enum DaemonResponse {
 /// Get the socket path
 fn get_socket_path() -> PathBuf {
     if cfg!(windows) {
-        PathBuf::from(format!(r"\\.\pipe\rcurl-{}", whoami()))
+        PathBuf::from(format!(r"\\.\pipe\recurl-{}", whoami()))
     } else {
         let uid = unsafe { libc::getuid() };
-        PathBuf::from(format!("/tmp/rcurl.{}.sock", uid))
+        PathBuf::from(format!("/tmp/recurl.{}.sock", uid))
     }
 }
 
@@ -81,24 +81,24 @@ pub fn start_daemon_if_needed(debug: bool) -> io::Result<()> {
     }
 
     if debug {
-        eprintln!("[rcurl] Starting daemon...");
+        eprintln!("[recurl] Starting daemon...");
     }
 
-    // Find rcurld binary (same directory as rcurl)
-    let rcurld_path = std::env::current_exe()?
+    // Find recurld binary (same directory as recurl)
+    let recurld_path = std::env::current_exe()?
         .parent()
-        .map(|p| p.join(if cfg!(windows) { "rcurld.exe" } else { "rcurld" }))
-        .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "Cannot find rcurld"))?;
+        .map(|p| p.join(if cfg!(windows) { "recurld.exe" } else { "recurld" }))
+        .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "Cannot find recurld"))?;
 
-    if !rcurld_path.exists() {
+    if !recurld_path.exists() {
         return Err(io::Error::new(
             io::ErrorKind::NotFound,
-            format!("rcurld not found at {:?}", rcurld_path),
+            format!("recurld not found at {:?}", recurld_path),
         ));
     }
 
     // Start daemon in background
-    Command::new(&rcurld_path)
+    Command::new(&recurld_path)
         .arg("start")
         .stdin(Stdio::null())
         .stdout(Stdio::null())
@@ -110,7 +110,7 @@ pub fn start_daemon_if_needed(debug: bool) -> io::Result<()> {
         std::thread::sleep(std::time::Duration::from_millis(100));
         if is_daemon_running() {
             if debug {
-                eprintln!("[rcurl] Daemon started");
+                eprintln!("[recurl] Daemon started");
             }
             return Ok(());
         }

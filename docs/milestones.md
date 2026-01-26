@@ -20,7 +20,7 @@ M0 ──▶ M0.5 ──▶ M1 ──▶ M2 ──┬──▶ M3 ──▶ M4
 
 ## M0: Shim + curl_engine ✓
 
-**Goal**: rcurl executes curl_engine and passes through all arguments unchanged.
+**Goal**: recurl executes curl_engine and passes through all arguments unchanged.
 
 ### Tasks
 
@@ -29,20 +29,20 @@ M0 ──▶ M0.5 ──▶ M1 ──▶ M2 ──┬──▶ M3 ──▶ M4
 - [x] Locate and execute `curl_engine` binary
 - [x] Forward stdin/stdout/stderr correctly
 - [x] Preserve exit codes
-- [x] Handle `--rcurl-*` flags (strip before forwarding)
-- [x] `--rcurl-strict` flag (no-op for now, just recognized)
-- [x] `--rcurl-debug` flag (print debug info to stderr)
+- [x] Handle `--recurl-*` flags (strip before forwarding)
+- [x] `--recurl-strict` flag (no-op for now, just recognized)
+- [x] `--recurl-debug` flag (print debug info to stderr)
 
 ### Success criteria
 
 ```bash
 # These must produce identical output:
 curl_engine https://httpbin.org/get
-rcurl --rcurl-strict https://httpbin.org/get
+recurl --recurl-strict https://httpbin.org/get
 
 # Exit codes must match:
 curl_engine --invalid-flag; echo $?
-rcurl --rcurl-strict --invalid-flag; echo $?
+recurl --recurl-strict --invalid-flag; echo $?
 ```
 
 ### Platform notes
@@ -57,7 +57,7 @@ rcurl --rcurl-strict --invalid-flag; echo $?
 
 ## M0.5: Conformance harness ✓
 
-**Goal**: Automated tests proving rcurl matches curl_engine exactly.
+**Goal**: Automated tests proving recurl matches curl_engine exactly.
 
 ### Tasks
 
@@ -107,17 +107,17 @@ rcurl --rcurl-strict --invalid-flag; echo $?
   - [x] PerimeterX: `_px` patterns
   - [x] DataDome: `datadome` cookie
   - [x] hCaptcha/reCAPTCHA: challenge page signatures
-- [x] `--rcurl-debug` shows detection results
+- [x] `--recurl-debug` shows detection results
 - [x] Return original response (no escalation yet)
 
 ### Success criteria
 
 ```bash
 # Debug output shows detection:
-rcurl --rcurl-debug https://protected-site.com
-# [rcurl] Status: 403
-# [rcurl] Detected: Cloudflare challenge
-# [rcurl] Would escalate: impersonation → js
+recurl --recurl-debug https://protected-site.com
+# [recurl] Status: 403
+# [recurl] Detected: Cloudflare challenge
+# [recurl] Would escalate: impersonation → js
 # <original 403 response>
 ```
 
@@ -141,23 +141,23 @@ rcurl --rcurl-debug https://protected-site.com
   ```
   curl_engine fails (M1 detection) → retry with curl_chrome
   ```
-- [x] `--rcurl-impersonate <profile>` to force specific profile
+- [x] `--recurl-impersonate <profile>` to force specific profile
 - [x] Re-run detection on impersonation response
 - [x] If still blocked, mark for JS escalation (M3)
-- [x] `--rcurl-debug` shows escalation steps
+- [x] `--recurl-debug` shows escalation steps
 
 ### Success criteria
 
 ```bash
 # Site that blocks curl but allows browsers:
 curl_engine https://tls-fingerprint-site.com    # 403
-rcurl https://tls-fingerprint-site.com          # 200 (via impersonation)
+recurl https://tls-fingerprint-site.com          # 200 (via impersonation)
 
 # Debug shows escalation:
-rcurl --rcurl-debug https://tls-fingerprint-site.com
-# [rcurl] curl_engine: 403 Cloudflare
-# [rcurl] Escalating: impersonation (chrome)
-# [rcurl] curl_chrome: 200 OK
+recurl --recurl-debug https://tls-fingerprint-site.com
+# [recurl] curl_engine: 403 Cloudflare
+# [recurl] Escalating: impersonation (chrome)
+# [recurl] curl_chrome: 200 OK
 # <successful response>
 ```
 
@@ -180,7 +180,7 @@ rcurl --rcurl-debug https://tls-fingerprint-site.com
 - [x] Chromium integration (`chromiumoxide` crate)
 - [x] **Chromium auto-download** (no manual install required)
   - Downloads on first use via `chromiumoxide_fetcher`
-  - Cached in `~/.local/share/rcurl/chromium/`
+  - Cached in `~/.local/share/recurl/chromium/`
   - Falls back to system Chrome if available
 - [x] Preflight flow:
   1. Launch headless Chromium
@@ -192,11 +192,11 @@ rcurl --rcurl-debug https://tls-fingerprint-site.com
   - Execute curl_engine with extracted cookies (`-b`)
   - Use final URL if redirected
   - Add any required headers
-- [x] `--rcurl-js` to force JS preflight (skip earlier layers)
-- [x] `--rcurl-js-rendered` to return DOM instead of curl replay
-- [x] `--rcurl-js-wait <selector>` to wait for element
-- [x] `--rcurl-js-timeout <ms>` (default: 30000)
-- [x] `--rcurl-debug` shows JS preflight steps
+- [x] `--recurl-js` to force JS preflight (skip earlier layers)
+- [x] `--recurl-js-rendered` to return DOM instead of curl replay
+- [x] `--recurl-js-wait <selector>` to wait for element
+- [x] `--recurl-js-timeout <ms>` (default: 30000)
+- [x] `--recurl-debug` shows JS preflight steps
 - [x] Browser integration tests (3 tests passing)
 
 ### Success criteria
@@ -204,19 +204,19 @@ rcurl --rcurl-debug https://tls-fingerprint-site.com
 ```bash
 # Site with Cloudflare Turnstile:
 curl_engine https://cf-challenge-site.com       # 403 challenge page
-rcurl https://cf-challenge-site.com             # 200 (via JS preflight)
+recurl https://cf-challenge-site.com             # 200 (via JS preflight)
 
 # Debug shows full flow:
-rcurl --rcurl-debug https://cf-challenge-site.com
-# [rcurl] curl_engine: 403 Cloudflare
-# [rcurl] Escalating: impersonation (chrome)
-# [rcurl] curl_chrome: 403 Cloudflare (JS challenge)
-# [rcurl] Escalating: JS preflight
-# [rcurl] Chromium: navigating...
-# [rcurl] Chromium: challenge solved, extracting cookies
-# [rcurl] Cookies: cf_clearance=xxx
-# [rcurl] Replaying with curl_engine + cookies
-# [rcurl] curl_engine: 200 OK
+recurl --recurl-debug https://cf-challenge-site.com
+# [recurl] curl_engine: 403 Cloudflare
+# [recurl] Escalating: impersonation (chrome)
+# [recurl] curl_chrome: 403 Cloudflare (JS challenge)
+# [recurl] Escalating: JS preflight
+# [recurl] Chromium: navigating...
+# [recurl] Chromium: challenge solved, extracting cookies
+# [recurl] Cookies: cf_clearance=xxx
+# [recurl] Replaying with curl_engine + cookies
+# [recurl] curl_engine: 200 OK
 # <successful response>
 ```
 
@@ -233,24 +233,24 @@ rcurl --rcurl-debug https://cf-challenge-site.com
 
 ---
 
-## M4: Daemon (rcurld) ✓
+## M4: Daemon (recurld) ✓
 
 **Goal**: Keep Chromium warm for fast JS preflight.
 
 ### Tasks
 
-- [x] Daemon binary (`rcurld`)
+- [x] Daemon binary (`recurld`)
 - [x] IPC transport:
-  - Linux/macOS: Unix socket (`/tmp/rcurl.<uid>.sock`)
-  - Windows: Named pipe (`\\.\pipe\rcurl-<user>`)
+  - Linux/macOS: Unix socket (`/tmp/recurl.<uid>.sock`)
+  - Windows: Named pipe (`\\.\pipe\recurl-<user>`)
 - [x] Protocol (JSON over socket):
   - `JsPreflight { url, options }` → `{ cookies, final_url, headers }`
   - `Status` → `{ uptime, pool_size, requests_served }`
   - `Shutdown` → `{}`
 - [x] Chromium pool (1-3 warm instances)
-- [x] Auto-start: rcurl spawns daemon on first JS request
+- [x] Auto-start: recurl spawns daemon on first JS request
 - [x] Auto-shutdown: idle timeout (default 60s)
-- [x] `--rcurl-daemon on|off` to control daemon usage
+- [x] `--recurl-daemon on|off` to control daemon usage
 - [x] `RCURL_DAEMON_IDLE_MS` environment variable
 - [x] Cookie cache per domain
 
@@ -258,18 +258,18 @@ rcurl --rcurl-debug https://cf-challenge-site.com
 
 ```bash
 # First request starts daemon:
-rcurl --rcurl-js https://site.com
-# [rcurl] Starting daemon...
-# [rcurl] JS preflight via daemon
+recurl --recurl-js https://site.com
+# [recurl] Starting daemon...
+# [recurl] JS preflight via daemon
 # <response in ~3s>
 
 # Second request is fast:
-rcurl --rcurl-js https://site.com
-# [rcurl] JS preflight via daemon
+recurl --recurl-js https://site.com
+# [recurl] JS preflight via daemon
 # <response in ~500ms>
 
 # Daemon status:
-rcurld status
+recurld status
 # Uptime: 45s
 # Pool: 2 browsers ready
 # Requests: 5
@@ -287,7 +287,7 @@ rcurld status
 
 ## M5: Distribution ✓
 
-**Goal**: Users can easily install rcurl on any platform.
+**Goal**: Users can easily install recurl on any platform.
 
 ### Tasks
 
@@ -329,13 +329,13 @@ rcurld status
 
 ```bash
 # One-liner install works:
-curl -fsSL https://rcurl.dev/install.sh | bash
+curl -fsSL https://recurl.dev/install.sh | bash
 
 # Package manager works:
-brew install rcurl
+brew install recurl
 
 # Binary runs without dependencies:
-./rcurl --version
+./recurl --version
 ```
 
 ---
@@ -348,14 +348,14 @@ All core milestones are complete:
 - ✓ M1: Failure detection
 - ✓ M2: Impersonation layer
 - ✓ M3: JS preflight + replay (with Chromium auto-download)
-- ✓ M4: Daemon (rcurld)
+- ✓ M4: Daemon (recurld)
 - ✓ M5: Distribution
 
 ### Test Summary
 
 | Category | Tests | Status |
 |----------|-------|--------|
-| Unit tests (rcurl binary) | 64 | ✓ All passing |
+| Unit tests (recurl binary) | 64 | ✓ All passing |
 | Conformance tests | 48 | ✓ All passing (requires curl_engine) |
 | Browser integration | 3 | ✓ All passing |
 | **Total** | **115** | **✓ All passing** |
@@ -385,9 +385,9 @@ All core milestones are complete:
 
 | Platform | Path |
 |----------|------|
-| Linux | `~/.local/share/rcurl/chromium/` |
-| macOS | `~/Library/Application Support/rcurl/chromium/` |
-| Windows | `%LOCALAPPDATA%\rcurl\chromium\` |
+| Linux | `~/.local/share/recurl/chromium/` |
+| macOS | `~/Library/Application Support/recurl/chromium/` |
+| Windows | `%LOCALAPPDATA%\recurl\chromium\` |
 
 ## Completed Enhancements
 

@@ -1,27 +1,27 @@
-# Maintainer: rcurl team
-# AUR binary package for rcurl - prebuilt binaries
+# Maintainer: recurl team
+# AUR binary package for recurl - prebuilt binaries
 
-pkgname=rcurl-bin
+pkgname=recurl-bin
 pkgver=0.1.0
 pkgrel=1
 pkgdesc="Drop-in curl replacement with automatic anti-bot bypass (prebuilt binary)"
 arch=('x86_64')
-url="https://github.com/user/rcurl"
+url="https://github.com/user/recurl"
 license=('MIT')
 depends=('curl' 'openssl')
 optdepends=(
     'chromium: for JS preflight (auto-downloaded if not present)'
     'google-chrome: alternative to chromium for JS preflight'
 )
-provides=('rcurl')
-conflicts=('rcurl' 'rcurl-git')
-source_x86_64=("https://github.com/user/rcurl/releases/download/v$pkgver/rcurl-linux-x86_64.tar.gz")
+provides=('recurl')
+conflicts=('recurl' 'recurl-git')
+source_x86_64=("https://github.com/user/recurl/releases/download/v$pkgver/recurl-linux-x86_64.tar.gz")
 sha256sums_x86_64=('SKIP')
 
 package() {
     # Install binaries
-    install -Dm755 "bin/rcurl" "$pkgdir/usr/bin/rcurl"
-    install -Dm755 "bin/rcurld" "$pkgdir/usr/bin/rcurld"
+    install -Dm755 "bin/recurl" "$pkgdir/usr/bin/recurl"
+    install -Dm755 "bin/recurld" "$pkgdir/usr/bin/recurld"
 
     # Install license
     install -Dm644 "LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE" || true
@@ -31,12 +31,12 @@ package() {
 }
 
 post_install() {
-    echo "rcurl installed! To use as a drop-in curl replacement:"
-    echo "  echo 'alias curl=rcurl' >> ~/.bashrc"
+    echo "recurl installed! To use as a drop-in curl replacement:"
+    echo "  echo 'alias curl=recurl' >> ~/.bashrc"
     echo ""
-    echo "Or use rcurl directly:"
-    echo "  rcurl https://example.com"
+    echo "Or use recurl directly:"
+    echo "  recurl https://example.com"
     echo ""
     echo "For JS preflight with warm browsers, start the daemon:"
-    echo "  rcurld start"
+    echo "  recurld start"
 }

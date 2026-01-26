@@ -1,29 +1,29 @@
 # Architecture
 
-rcurl is a drop-in curl replacement that transparently handles anti-bot protections. It executes a real curl engine and escalates through impersonation and JS rendering when requests are blocked.
+recurl is a drop-in curl replacement that transparently handles anti-bot protections. It executes a real curl engine and escalates through impersonation and JS rendering when requests are blocked.
 
 ## Components
 
 | Binary | Role |
 |--------|------|
-| `curl` | Shell alias to rcurl (user-configured, see `installation.md`) |
-| `rcurl` | Smart shim with fallback logic |
+| `curl` | Shell alias to recurl (user-configured, see `installation.md`) |
+| `recurl` | Smart shim with fallback logic |
 | `curl_engine` | Bundled upstream curl binary (internal, compliance baseline) |
-| `rcurld` | Daemon for warm Chromium and cached resources |
+| `recurld` | Daemon for warm Chromium and cached resources |
 
 ### Platform availability
 
 | Component | Linux | macOS | Windows |
 |-----------|-------|-------|---------|
-| rcurl | Yes | Yes | Yes |
-| rcurld | Yes | Yes | Yes |
+| recurl | Yes | Yes | Yes |
+| recurld | Yes | Yes | Yes |
 | curl_engine | Yes | Yes | Yes |
 | curl-impersonate | Yes | Yes | **No** |
 
 ## Execution flow (smart mode, default)
 
 ```
-1. rcurl receives request
+1. recurl receives request
 2. Execute via curl_engine
 3. Check response for failure signals:
    - HTTP 403, 429, 503
@@ -39,9 +39,9 @@ The user sees only the final successful response (or the last failure if all att
 
 ## Execution flow (strict mode)
 
-When `--rcurl-strict` or `RCURL_STRICT=1` is set:
+When `--recurl-strict` or `RCURL_STRICT=1` is set:
 
-- rcurl executes `curl_engine` with no modifications
+- recurl executes `curl_engine` with no modifications
 - No fallback, no retries
 - Byte-for-byte identical to upstream curl
 
@@ -92,8 +92,8 @@ Generic patterns:
 
 | Component | Technology |
 |-----------|------------|
-| rcurl shim | Rust |
-| rcurld daemon | Rust |
+| recurl shim | Rust |
+| recurld daemon | Rust |
 | curl_engine | Bundled upstream curl binary |
 | Impersonation | curl-impersonate (pre-built binaries) |
 | JS preflight | Chromium via chromiumoxide/headless_chrome |
@@ -118,5 +118,5 @@ Generic patterns:
 ## Observability
 
 - Smart mode: user sees final result only (success or last failure)
-- `--rcurl-debug`: shows escalation steps and timing
+- `--recurl-debug`: shows escalation steps and timing
 - Strict mode: stdout, stderr, exit codes identical to `curl_engine`

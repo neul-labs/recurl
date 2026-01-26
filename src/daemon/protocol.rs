@@ -1,11 +1,11 @@
 //! Daemon protocol definitions
 //!
-//! Defines the request/response messages exchanged between rcurl and rcurld.
+//! Defines the request/response messages exchanged between recurl and recurld.
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-/// Request message from rcurl to rcurld
+/// Request message from recurl to recurld
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum DaemonRequest {
@@ -31,7 +31,7 @@ pub enum DaemonRequest {
     Ping,
 }
 
-/// Response message from rcurld to rcurl
+/// Response message from recurld to recurl
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type")]
 pub enum DaemonResponse {

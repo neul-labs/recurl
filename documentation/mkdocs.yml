@@ -1,8 +1,8 @@
-site_name: rcurl
+site_name: recurl
 site_description: Drop-in curl replacement with automatic anti-bot bypass
-site_url: https://rcurl.dev
-repo_url: https://github.com/user/rcurl
-repo_name: user/rcurl
+site_url: https://recurl.dev
+repo_url: https://github.com/user/recurl
+repo_name: user/recurl
 
 theme:
   name: material
@@ -77,7 +77,7 @@ nav:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/user/rcurl
+      link: https://github.com/user/recurl
   generator: false
 
-copyright: Copyright &copy; 2024 rcurl contributors
+copyright: Copyright &copy; 2024 recurl contributors

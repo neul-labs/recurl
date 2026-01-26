@@ -1,4 +1,4 @@
-# Daemon (rcurld)
+# Daemon (recurld)
 
 The daemon keeps heavyweight resources warm for fast escalation. It's optional but significantly speeds up JS preflight by maintaining a Chromium pool.
 
@@ -6,7 +6,7 @@ The daemon keeps heavyweight resources warm for fast escalation. It's optional b
 
 - Maintain warm Chromium browser pool
 - Cache cookies and session state per domain
-- Execute JS preflight on behalf of rcurl
+- Execute JS preflight on behalf of recurl
 - Provide fast response for escalation scenarios
 
 ## Lifecycle
@@ -15,7 +15,7 @@ The daemon keeps heavyweight resources warm for fast escalation. It's optional b
 First JS preflight request
          │
          ▼
-    rcurld starts
+    recurld starts
          │
          ▼
     Handles requests
@@ -24,13 +24,13 @@ First JS preflight request
     Idle timeout (60s default)
          │
          ▼
-    rcurld shuts down
+    recurld shuts down
 ```
 
-- Started on first demand (JS preflight or `--rcurl-daemon on`)
+- Started on first demand (JS preflight or `--recurl-daemon on`)
 - Auto-shutdown after idle timeout
 - Configure timeout: `RCURL_DAEMON_IDLE_MS=<ms>` (default: 60000)
-- Disable daemon: `--rcurl-daemon off` (JS runs inline, slower but no background process)
+- Disable daemon: `--recurl-daemon off` (JS runs inline, slower but no background process)
 
 ## Transport
 
@@ -40,14 +40,14 @@ IPC transport uses nng for efficient message passing.
 
 | Method | Address | Notes |
 |--------|---------|-------|
-| Unix socket (default) | `ipc:///tmp/rcurl.<uid>.sock` | Fast, secure |
+| Unix socket (default) | `ipc:///tmp/recurl.<uid>.sock` | Fast, secure |
 | TCP (optional) | `tcp://127.0.0.1:<port>` | Requires token auth |
 
 ### Windows
 
 | Method | Address | Notes |
 |--------|---------|-------|
-| Named pipe (default) | `ipc://\\.\pipe\rcurl-<username>` | Fast, secure |
+| Named pipe (default) | `ipc://\\.\pipe\recurl-<username>` | Fast, secure |
 | TCP (optional) | `tcp://127.0.0.1:<port>` | Requires token auth |
 
 ## RPCs
@@ -68,7 +68,7 @@ The daemon maintains:
 
 ## When daemon is disabled
 
-With `--rcurl-daemon off`:
+With `--recurl-daemon off`:
 
 - JS preflight runs inline (launches Chromium per request)
 - Slower but no background process

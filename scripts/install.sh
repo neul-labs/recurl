@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# rcurl installer for Linux and macOS
-# Usage: curl -fsSL https://rcurl.dev/install.sh | bash
+# recurl installer for Linux and macOS
+# Usage: curl -fsSL https://recurl.dev/install.sh | bash
 
-VERSION="${RCURL_VERSION:-latest}"
-INSTALL_DIR="${RCURL_INSTALL_DIR:-}"
-GITHUB_REPO="user/rcurl"  # TODO: update with actual repo
+VERSION="${RECURL_VERSION:-latest}"
+INSTALL_DIR="${RECURL_INSTALL_DIR:-}"
+GITHUB_REPO="user/recurl"  # TODO: update with actual repo
 BASE_URL="https://github.com/${GITHUB_REPO}/releases"
 
 # Colors
@@ -99,7 +99,7 @@ get_latest_version() {
 main() {
     echo ""
     echo -e "${GREEN}╔═══════════════════════════════════════╗${NC}"
-    echo -e "${GREEN}║         rcurl installer               ║${NC}"
+    echo -e "${GREEN}║         recurl installer               ║${NC}"
     echo -e "${GREEN}╚═══════════════════════════════════════╝${NC}"
     echo ""
 
@@ -114,7 +114,7 @@ main() {
         info "Fetching latest version..."
         VERSION=$(get_latest_version)
         if [[ -z "$VERSION" ]]; then
-            error "Failed to fetch latest version. Set RCURL_VERSION explicitly."
+            error "Failed to fetch latest version. Set RECURL_VERSION explicitly."
         fi
     fi
     info "Installing version: ${VERSION}"
@@ -122,9 +122,9 @@ main() {
     # Determine install directory
     if [[ -z "$INSTALL_DIR" ]]; then
         if [[ -w "/usr/local" ]]; then
-            INSTALL_DIR="/usr/local/rcurl"
+            INSTALL_DIR="/usr/local/recurl"
         else
-            INSTALL_DIR="$HOME/.local/rcurl"
+            INSTALL_DIR="$HOME/.local/recurl"
         fi
     fi
     info "Install directory: ${INSTALL_DIR}"
@@ -135,7 +135,7 @@ main() {
     trap "rm -rf $tmp_dir" EXIT
 
     # Download archive
-    local archive_name="rcurl-${os}-${arch}.tar.gz"
+    local archive_name="recurl-${os}-${arch}.tar.gz"
     local download_url="${BASE_URL}/download/${VERSION}/${archive_name}"
     info "Downloading ${archive_name}..."
     download "$download_url" "${tmp_dir}/${archive_name}"
@@ -146,19 +146,19 @@ main() {
     tar -xzf "${tmp_dir}/${archive_name}" -C "$INSTALL_DIR" --strip-components=1
 
     # Make binaries executable
-    chmod +x "$INSTALL_DIR/rcurl"
-    chmod +x "$INSTALL_DIR/rcurld"
+    chmod +x "$INSTALL_DIR/recurl"
+    chmod +x "$INSTALL_DIR/recurld"
     chmod +x "$INSTALL_DIR/bin/"*
 
-    success "rcurl installed to ${INSTALL_DIR}"
+    success "recurl installed to ${INSTALL_DIR}"
     echo ""
 
     # Verify installation
     info "Verifying installation..."
-    if "$INSTALL_DIR/rcurl" --rcurl-debug --version &> /dev/null; then
-        success "rcurl binary works correctly"
+    if "$INSTALL_DIR/recurl" --recurl-debug --version &> /dev/null; then
+        success "recurl binary works correctly"
     else
-        warn "rcurl binary may have issues. Check ${INSTALL_DIR}/rcurl"
+        warn "recurl binary may have issues. Check ${INSTALL_DIR}/recurl"
     fi
     echo ""
 
@@ -167,10 +167,10 @@ main() {
     echo -e "${YELLOW}Shell configuration${NC}"
     echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo ""
-    echo "To use rcurl as a drop-in curl replacement, you can:"
+    echo "To use recurl as a drop-in curl replacement, you can:"
     echo ""
-    echo "  1. Use rcurl directly:  rcurl https://example.com"
-    echo "  2. Create a shell alias: alias curl='${INSTALL_DIR}/rcurl'"
+    echo "  1. Use recurl directly:  recurl https://example.com"
+    echo "  2. Create a shell alias: alias curl='${INSTALL_DIR}/recurl'"
     echo ""
 
     local shell_config
@@ -181,12 +181,12 @@ main() {
 
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         # Check if alias already exists
-        if grep -q "alias curl=.*rcurl" "$shell_config" 2>/dev/null; then
+        if grep -q "alias curl=.*recurl" "$shell_config" 2>/dev/null; then
             warn "Alias already exists in ${shell_config}"
         else
             echo "" >> "$shell_config"
-            echo "# rcurl - drop-in curl replacement with anti-bot bypass" >> "$shell_config"
-            echo "alias curl='${INSTALL_DIR}/rcurl'" >> "$shell_config"
+            echo "# recurl - drop-in curl replacement with anti-bot bypass" >> "$shell_config"
+            echo "alias curl='${INSTALL_DIR}/recurl'" >> "$shell_config"
             success "Alias added to ${shell_config}"
         fi
 
@@ -198,13 +198,13 @@ main() {
     else
         info "Skipping alias configuration."
         echo ""
-        echo "To use rcurl, either:"
+        echo "To use recurl, either:"
         echo ""
-        echo "  1. Call rcurl directly:"
-        echo "     ${INSTALL_DIR}/rcurl https://example.com"
+        echo "  1. Call recurl directly:"
+        echo "     ${INSTALL_DIR}/recurl https://example.com"
         echo ""
         echo "  2. Add to your shell config manually:"
-        echo "     echo \"alias curl='${INSTALL_DIR}/rcurl'\" >> ${shell_config}"
+        echo "     echo \"alias curl='${INSTALL_DIR}/recurl'\" >> ${shell_config}"
         echo ""
         echo "  3. Add to PATH:"
         echo "     export PATH=\"${INSTALL_DIR}:\$PATH\""
@@ -217,8 +217,8 @@ main() {
     echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo ""
     echo "Installed files:"
-    echo "  ${INSTALL_DIR}/rcurl        - main binary"
-    echo "  ${INSTALL_DIR}/rcurld       - daemon"
+    echo "  ${INSTALL_DIR}/recurl        - main binary"
+    echo "  ${INSTALL_DIR}/recurld       - daemon"
     echo "  ${INSTALL_DIR}/bin/         - curl engines"
     echo ""
     echo "Documentation: https://github.com/${GITHUB_REPO}#readme"

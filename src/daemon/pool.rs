@@ -323,7 +323,7 @@ impl BrowserPool {
         tokio::spawn(async move {
             while let Some(event) = handler.next().await {
                 if let Err(e) = event {
-                    eprintln!("[rcurld] Browser event error: {}", e);
+                    eprintln!("[recurld] Browser event error: {}", e);
                 }
             }
         });

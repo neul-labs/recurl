@@ -1,12 +1,12 @@
 # Troubleshooting
 
-Solutions to common issues with rcurl.
+Solutions to common issues with recurl.
 
 ---
 
 ## Installation Issues
 
-### "Command not found: rcurl"
+### "Command not found: recurl"
 
 The binary is not in your PATH.
 
@@ -14,10 +14,10 @@ The binary is not in your PATH.
 
 ```bash
 # Add to PATH (Linux/macOS)
-export PATH="/usr/local/rcurl:$PATH"
+export PATH="/usr/local/recurl:$PATH"
 
 # Or use full path
-/usr/local/rcurl/rcurl --version
+/usr/local/recurl/recurl --version
 ```
 
 ### Alias Not Working
@@ -31,7 +31,7 @@ The shell alias may not be set up correctly.
 alias curl
 
 # Re-add alias
-echo 'alias curl="/usr/local/rcurl/rcurl"' >> ~/.bashrc
+echo 'alias curl="/usr/local/recurl/recurl"' >> ~/.bashrc
 source ~/.bashrc
 ```
 
@@ -78,7 +78,7 @@ Chromium couldn't start. Common causes:
 
 3. **Sandbox issues**
    ```bash
-   # rcurl already uses --no-sandbox
+   # recurl already uses --no-sandbox
    # If still failing, check permissions
    ```
 
@@ -90,10 +90,10 @@ Network issues during Chromium download.
 
 ```bash
 # Retry with debug
-rcurl --rcurl-debug --rcurl-js https://example.com
+recurl --recurl-debug --recurl-js https://example.com
 
 # Or use system Chrome
-# Install Chrome and rcurl will find it
+# Install Chrome and recurl will find it
 ```
 
 ---
@@ -108,22 +108,22 @@ The site may have additional protections.
 
 1. **Force JS preflight**
    ```bash
-   rcurl --rcurl-js https://site.com
+   recurl --recurl-js https://site.com
    ```
 
 2. **Wait for specific element**
    ```bash
-   rcurl --rcurl-js --rcurl-js-wait ".content-loaded" https://site.com
+   recurl --recurl-js --recurl-js-wait ".content-loaded" https://site.com
    ```
 
 3. **Increase timeout**
    ```bash
-   rcurl --rcurl-js --rcurl-js-timeout 60000 https://site.com
+   recurl --recurl-js --recurl-js-timeout 60000 https://site.com
    ```
 
 4. **Check debug output**
    ```bash
-   rcurl --rcurl-debug --rcurl-js https://site.com
+   recurl --recurl-debug --recurl-js https://site.com
    ```
 
 ### Request Hangs
@@ -134,10 +134,10 @@ Possible timeout or infinite wait.
 
 ```bash
 # Set explicit timeout
-rcurl --rcurl-js --rcurl-js-timeout 30000 https://site.com
+recurl --recurl-js --recurl-js-timeout 30000 https://site.com
 
 # Or use curl timeout
-rcurl --max-time 60 https://site.com
+recurl --max-time 60 https://site.com
 ```
 
 ### Wrong Content Returned
@@ -148,10 +148,10 @@ The page may require JavaScript rendering.
 
 ```bash
 # Get rendered HTML
-rcurl --rcurl-js-rendered https://spa-site.com
+recurl --recurl-js-rendered https://spa-site.com
 
 # Wait for content
-rcurl --rcurl-js-rendered --rcurl-js-wait "#app-loaded" https://spa-site.com
+recurl --recurl-js-rendered --recurl-js-wait "#app-loaded" https://spa-site.com
 ```
 
 ---
@@ -166,10 +166,10 @@ The daemon may not be running or socket is stale.
 
 ```bash
 # Remove stale socket (Linux/macOS)
-rm /tmp/rcurl.*.sock
+rm /tmp/recurl.*.sock
 
 # Try again
-rcurl --rcurl-js https://example.com
+recurl --recurl-js https://example.com
 ```
 
 ### Daemon Using Too Much Memory
@@ -183,7 +183,7 @@ The browser pool consumes memory.
 export RCURL_DAEMON_IDLE_MS=10000
 
 # Or disable daemon
-rcurl --rcurl-daemon off --rcurl-js https://example.com
+recurl --recurl-daemon off --recurl-js https://example.com
 ```
 
 ### Daemon Won't Stop
@@ -194,10 +194,10 @@ Force kill the daemon process.
 
 ```bash
 # Find and kill (Linux/macOS)
-pkill -f rcurld
+pkill -f recurld
 
 # Windows
-taskkill /IM rcurld.exe /F
+taskkill /IM recurld.exe /F
 ```
 
 ---
@@ -218,10 +218,10 @@ Daemon may not be running.
 
 ```bash
 # See if daemon is active
-ps aux | grep rcurld
+ps aux | grep recurld
 
 # Enable debug to see daemon usage
-rcurl --rcurl-debug --rcurl-js https://example.com
+recurl --recurl-debug --recurl-js https://example.com
 ```
 
 ### High CPU Usage
@@ -235,7 +235,7 @@ Browser automation is CPU-intensive.
 export RCURL_DAEMON_IDLE_MS=30000
 
 # Disable daemon for one-off requests
-rcurl --rcurl-daemon off --rcurl-js https://example.com
+recurl --recurl-daemon off --recurl-js https://example.com
 ```
 
 ---
@@ -245,7 +245,7 @@ rcurl --rcurl-daemon off --rcurl-js https://example.com
 Always start troubleshooting with debug mode:
 
 ```bash
-rcurl --rcurl-debug https://problematic-site.com
+recurl --recurl-debug https://problematic-site.com
 ```
 
 **Debug output shows:**
@@ -259,10 +259,10 @@ rcurl --rcurl-debug https://problematic-site.com
 ### Combined with curl verbose
 
 ```bash
-rcurl --rcurl-debug -v https://problematic-site.com
+recurl --recurl-debug -v https://problematic-site.com
 ```
 
-Shows both rcurl decisions and curl network details.
+Shows both recurl decisions and curl network details.
 
 ---
 
@@ -270,10 +270,10 @@ Shows both rcurl decisions and curl network details.
 
 | Error | Meaning | Solution |
 |-------|---------|----------|
-| `curl_engine: 403` | Request blocked | Let rcurl escalate or use `--rcurl-js` |
-| `Detected: Cloudflare` | CF protection found | Normal, rcurl will escalate |
+| `curl_engine: 403` | Request blocked | Let recurl escalate or use `--recurl-js` |
+| `Detected: Cloudflare` | CF protection found | Normal, recurl will escalate |
 | `Browser launch timeout` | Chromium took too long | Check system resources |
-| `Navigation timeout` | Page load timeout | Increase `--rcurl-js-timeout` |
+| `Navigation timeout` | Page load timeout | Increase `--recurl-js-timeout` |
 | `Selector not found` | Wait element missing | Check selector or increase timeout |
 | `Failed to create socket` | IPC issue | Remove stale socket file |
 
@@ -286,13 +286,13 @@ Shows both rcurl decisions and curl network details.
 When reporting issues, include:
 
 ```bash
-rcurl --rcurl-debug --rcurl-js https://problematic-site.com 2>&1
+recurl --recurl-debug --recurl-js https://problematic-site.com 2>&1
 ```
 
 ### Check Version
 
 ```bash
-rcurl --version
+recurl --version
 ```
 
 ### System Information
@@ -304,9 +304,9 @@ which chromium google-chrome
 
 ### Report Issues
 
-Open an issue at [GitHub Issues](https://github.com/user/rcurl/issues) with:
+Open an issue at [GitHub Issues](https://github.com/user/recurl/issues) with:
 
-1. rcurl version
+1. recurl version
 2. Operating system and architecture
 3. Debug output
 4. Steps to reproduce

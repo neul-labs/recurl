@@ -1,6 +1,6 @@
 # Quick Start
 
-Get rcurl running in under 2 minutes.
+Get recurl running in under 2 minutes.
 
 ---
 
@@ -9,25 +9,25 @@ Get rcurl running in under 2 minutes.
 === "Linux / macOS"
 
     ```bash
-    curl -fsSL https://rcurl.dev/install.sh | bash
+    curl -fsSL https://recurl.dev/install.sh | bash
     ```
 
 === "Windows (PowerShell)"
 
     ```powershell
-    irm https://rcurl.dev/install.ps1 | iex
+    irm https://recurl.dev/install.ps1 | iex
     ```
 
 === "Homebrew"
 
     ```bash
-    brew install rcurl/tap/rcurl
+    brew install recurl/tap/recurl
     ```
 
 === "Docker"
 
     ```bash
-    docker run --rm ghcr.io/user/rcurl https://example.com
+    docker run --rm ghcr.io/user/recurl https://example.com
     ```
 
 ---
@@ -35,10 +35,10 @@ Get rcurl running in under 2 minutes.
 ## Verify Installation
 
 ```bash
-rcurl --version
+recurl --version
 ```
 
-You should see the curl version info (rcurl uses a real curl engine).
+You should see the curl version info (recurl uses a real curl engine).
 
 ---
 
@@ -46,43 +46,43 @@ You should see the curl version info (rcurl uses a real curl engine).
 
 ```bash
 # Basic request
-rcurl https://httpbin.org/get
+recurl https://httpbin.org/get
 
 # With debug output to see what's happening
-rcurl --rcurl-debug https://httpbin.org/get
+recurl --recurl-debug https://httpbin.org/get
 ```
 
 ---
 
 ## Set Up the curl Alias (Optional)
 
-The installer will ask if you want to alias `curl` to `rcurl`. If you said no but want to enable it later:
+The installer will ask if you want to alias `curl` to `recurl`. If you said no but want to enable it later:
 
 === "Bash"
 
     ```bash
-    echo 'alias curl="/usr/local/rcurl/rcurl"' >> ~/.bashrc
+    echo 'alias curl="/usr/local/recurl/recurl"' >> ~/.bashrc
     source ~/.bashrc
     ```
 
 === "Zsh"
 
     ```bash
-    echo 'alias curl="/usr/local/rcurl/rcurl"' >> ~/.zshrc
+    echo 'alias curl="/usr/local/recurl/recurl"' >> ~/.zshrc
     source ~/.zshrc
     ```
 
 === "PowerShell"
 
     ```powershell
-    Add-Content $PROFILE 'Set-Alias -Name curl -Value "C:\Program Files\rcurl\rcurl.exe"'
+    Add-Content $PROFILE 'Set-Alias -Name curl -Value "C:\Program Files\recurl\recurl.exe"'
     . $PROFILE
     ```
 
-Now `curl` commands automatically use rcurl:
+Now `curl` commands automatically use recurl:
 
 ```bash
-curl https://protected-site.com  # Uses rcurl transparently
+curl https://protected-site.com  # Uses recurl transparently
 ```
 
 ---
@@ -93,12 +93,12 @@ Try a site that blocks regular curl:
 
 ```bash
 # This might be blocked with regular curl
-rcurl --rcurl-debug https://nowsecure.nl
+recurl --recurl-debug https://nowsecure.nl
 
 # Output shows the escalation:
-# [rcurl] curl_engine: 403 Cloudflare
-# [rcurl] Escalating: impersonation (chrome)
-# [rcurl] curl_chrome: 200 OK
+# [recurl] curl_engine: 403 Cloudflare
+# [recurl] Escalating: impersonation (chrome)
+# [recurl] curl_chrome: 200 OK
 ```
 
 ---

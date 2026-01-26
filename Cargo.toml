@@ -1,20 +1,23 @@
 [package]
-name = "rcurl"
+name = "recurl"
 version = "0.1.0"
 edition = "2021"
 description = "Drop-in curl replacement with automatic anti-bot bypass"
 license = "MIT"
-repository = "https://github.com/user/rcurl"
+readme = "README.md"
+repository = "https://github.com/neul-labs/recurl"
+documentation = "https://docs.neullabs.com/recurl"
+homepage = "https://github.com/neul-labs/recurl"
 keywords = ["curl", "http", "anti-bot", "scraping"]
 categories = ["command-line-utilities", "web-programming"]
-default-run = "rcurl"
+default-run = "recurl"
 
 [[bin]]
-name = "rcurl"
+name = "recurl"
 path = "src/main.rs"
 
 [[bin]]
-name = "rcurld"
+name = "recurld"
 path = "src/daemon/main.rs"
 required-features = ["daemon"]
 

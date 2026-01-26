@@ -1,16 +1,16 @@
-# Daemon (rcurld)
+# Daemon (recurld)
 
-The rcurl daemon keeps heavyweight resources warm for fast JS preflight operations.
+The recurl daemon keeps heavyweight resources warm for fast JS preflight operations.
 
 ---
 
 ## Overview
 
-`rcurld` is a background process that maintains:
+`recurld` is a background process that maintains:
 
 - **Chromium browser pool** - pre-launched browser instances
 - **Cookie cache** - per-domain cookies from successful preflights
-- **IPC server** - accepts requests from rcurl
+- **IPC server** - accepts requests from recurl
 
 Without the daemon, each JS preflight would need to:
 
@@ -28,11 +28,11 @@ With the daemon:
 ## Lifecycle
 
 ```
-First JS preflight request from rcurl
+First JS preflight request from recurl
               │
               ▼
 ┌─────────────────────────────┐
-│      rcurld starts          │
+│      recurld starts          │
 │  - Opens IPC socket/pipe    │
 │  - Launches browser pool    │
 └─────────────────────────────┘
@@ -50,7 +50,7 @@ First JS preflight request from rcurl
               │
               ▼
 ┌─────────────────────────────┐
-│     rcurld shuts down       │
+│     recurld shuts down       │
 │  - Closes browsers          │
 │  - Removes socket/pipe      │
 └─────────────────────────────┘
@@ -64,13 +64,13 @@ The daemon starts automatically when needed:
 
 ```bash
 # First JS preflight triggers daemon start
-rcurl --rcurl-js https://example.com
-# [rcurl] Starting daemon...
-# [rcurl] JS preflight via daemon
+recurl --recurl-js https://example.com
+# [recurl] Starting daemon...
+# [recurl] JS preflight via daemon
 
 # Subsequent requests use running daemon
-rcurl --rcurl-js https://example.com
-# [rcurl] JS preflight via daemon (fast)
+recurl --recurl-js https://example.com
+# [recurl] JS preflight via daemon (fast)
 ```
 
 ---
@@ -99,10 +99,10 @@ export RCURL_DAEMON_IDLE_MS=300000  # 5 minutes
 
 ```bash
 # Force daemon usage
-rcurl --rcurl-daemon on --rcurl-js https://example.com
+recurl --recurl-daemon on --recurl-js https://example.com
 
 # Disable daemon (run inline)
-rcurl --rcurl-daemon off --rcurl-js https://example.com
+recurl --recurl-daemon off --recurl-js https://example.com
 ```
 
 ---
@@ -111,27 +111,27 @@ rcurl --rcurl-daemon off --rcurl-js https://example.com
 
 ### Linux / macOS
 
-**Unix socket** at `/tmp/rcurl.<uid>.sock`
+**Unix socket** at `/tmp/recurl.<uid>.sock`
 
 ```bash
 # Example path
-/tmp/rcurl.1000.sock
+/tmp/recurl.1000.sock
 ```
 
 ### Windows
 
-**Named pipe** at `\\.\pipe\rcurl-<username>`
+**Named pipe** at `\\.\pipe\recurl-<username>`
 
 ```powershell
 # Example path
-\\.\pipe\rcurl-john
+\\.\pipe\recurl-john
 ```
 
 ---
 
 ## Protocol
 
-rcurl and rcurld communicate via JSON messages over the socket/pipe.
+recurl and recurld communicate via JSON messages over the socket/pipe.
 
 ### Requests
 
@@ -227,7 +227,7 @@ Cached cookies are used for immediate replay without launching Chromium.
 
 ## When Daemon is Disabled
 
-With `--rcurl-daemon off`:
+With `--recurl-daemon off`:
 
 - Chromium launches inline for each request
 - No browser pool (cold start every time)
@@ -248,13 +248,13 @@ Use cases:
 
 ```bash
 # Check for stale socket
-ls -la /tmp/rcurl.*.sock
+ls -la /tmp/recurl.*.sock
 
 # Remove stale socket
-rm /tmp/rcurl.*.sock
+rm /tmp/recurl.*.sock
 
 # Try again
-rcurl --rcurl-js https://example.com
+recurl --recurl-js https://example.com
 ```
 
 ### Daemon Using Too Much Memory
@@ -264,14 +264,14 @@ rcurl --rcurl-js https://example.com
 export RCURL_DAEMON_IDLE_MS=10000
 
 # Or disable daemon
-rcurl --rcurl-daemon off --rcurl-js https://example.com
+recurl --recurl-daemon off --recurl-js https://example.com
 ```
 
 ### Check Daemon Status
 
 ```bash
 # Use debug mode to see daemon interaction
-rcurl --rcurl-debug --rcurl-js https://example.com
+recurl --recurl-debug --recurl-js https://example.com
 ```
 
 ---
@@ -282,7 +282,7 @@ While the daemon is designed to be automatic, you can control it:
 
 ```bash
 # Start daemon manually
-rcurld
+recurld
 
 # Daemon runs in foreground, Ctrl+C to stop
 ```

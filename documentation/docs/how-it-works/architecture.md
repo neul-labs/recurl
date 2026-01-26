@@ -1,6 +1,6 @@
 # Architecture
 
-Technical overview of rcurl's design and components.
+Technical overview of recurl's design and components.
 
 ---
 
@@ -18,7 +18,7 @@ Technical overview of rcurl's design and components.
                                   │
                                   ▼
 ┌─────────────────────────────────────────────────────────────────────┐
-│                              rcurl                                   │
+│                              recurl                                   │
 │  ┌────────────────┐  ┌────────────────┐  ┌────────────────────────┐ │
 │  │ Failure        │  │ Escalation     │  │ Layer Execution        │ │
 │  │ Detection      │  │ Logic          │  │ (curl, impersonate, js)│ │
@@ -29,7 +29,7 @@ Technical overview of rcurl's design and components.
               │                   │                   │
               ▼                   ▼                   ▼
        ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-       │ curl_engine │    │curl_chrome  │    │   rcurld    │
+       │ curl_engine │    │curl_chrome  │    │   recurld    │
        │ (upstream)  │    │(impersonate)│    │  (daemon)   │
        └─────────────┘    └─────────────┘    └──────┬──────┘
                                                     │
@@ -44,7 +44,7 @@ Technical overview of rcurl's design and components.
 
 ## Components
 
-### rcurl (Main Binary)
+### recurl (Main Binary)
 
 The smart shim that orchestrates everything.
 
@@ -87,7 +87,7 @@ Pre-built curl with browser TLS fingerprints.
 !!! note "Platform"
     Only available on Linux and macOS.
 
-### rcurld (Daemon)
+### recurld (Daemon)
 
 Background process that keeps resources warm.
 
@@ -116,7 +116,7 @@ First JS request → Start daemon
 ### Smart Mode
 
 ```
-rcurl https://example.com
+recurl https://example.com
         │
         ▼
 ┌───────────────────┐
@@ -147,7 +147,7 @@ rcurl https://example.com
 ### Strict Mode
 
 ```
-rcurl --rcurl-strict https://example.com
+recurl --recurl-strict https://example.com
         │
         ▼
 ┌───────────────────┐
@@ -159,7 +159,7 @@ rcurl --rcurl-strict https://example.com
 
 ## Failure Detection
 
-rcurl detects blocking in two ways:
+recurl detects blocking in two ways:
 
 ### HTTP Status Codes
 
@@ -171,7 +171,7 @@ rcurl detects blocking in two ways:
 
 ### Response Body Patterns
 
-rcurl scans response bodies for anti-bot signatures:
+recurl scans response bodies for anti-bot signatures:
 
 ```
 Cloudflare:
@@ -195,16 +195,16 @@ DataDome:
 
 ## IPC Transport
 
-Communication between rcurl and rcurld.
+Communication between recurl and recurld.
 
 ### Linux / macOS
 
-- **Default:** Unix socket at `/tmp/rcurl.<uid>.sock`
+- **Default:** Unix socket at `/tmp/recurl.<uid>.sock`
 - **Protocol:** JSON over socket
 
 ### Windows
 
-- **Default:** Named pipe at `\\.\pipe\rcurl-<username>`
+- **Default:** Named pipe at `\\.\pipe\recurl-<username>`
 - **Protocol:** JSON over pipe
 
 ### Messages
@@ -221,8 +221,8 @@ Communication between rcurl and rcurld.
 
 | Component | Technology |
 |-----------|------------|
-| rcurl shim | Rust |
-| rcurld daemon | Rust (tokio async) |
+| recurl shim | Rust |
+| recurld daemon | Rust (tokio async) |
 | curl_engine | Bundled curl binary |
 | Impersonation | curl-impersonate binaries |
 | JS preflight | chromiumoxide (Rust CDP client) |
@@ -252,9 +252,9 @@ dirs = "5.x"           # Platform paths
 ### Installation Layout
 
 ```
-rcurl/
-├── rcurl(.exe)              # Main binary
-├── rcurld(.exe)             # Daemon binary
+recurl/
+├── recurl(.exe)              # Main binary
+├── recurld(.exe)             # Daemon binary
 └── bin/
     ├── curl_engine(.exe)    # Upstream curl
     ├── curl_chrome          # Chrome impersonation
@@ -265,9 +265,9 @@ rcurl/
 ### Runtime Data
 
 ```
-~/.local/share/rcurl/        # Linux
-~/Library/Application Support/rcurl/  # macOS
-%LOCALAPPDATA%\rcurl\        # Windows
+~/.local/share/recurl/        # Linux
+~/Library/Application Support/recurl/  # macOS
+%LOCALAPPDATA%\recurl\        # Windows
     └── chromium/            # Downloaded Chromium
 ```
 

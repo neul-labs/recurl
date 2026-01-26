@@ -46,9 +46,9 @@ pub fn find_curl_engine() -> io::Result<PathBuf> {
 pub fn find_engine(engine_type: EngineType) -> io::Result<PathBuf> {
     let binary_name = engine_binary_name(engine_type.binary_name());
 
-    // 1. Check RCURL_ENGINE_PATH environment variable (for curl_engine only)
+    // 1. Check RECURL_ENGINE_PATH environment variable (for curl_engine only)
     if engine_type == EngineType::Curl {
-        if let Ok(path) = env::var("RCURL_ENGINE_PATH") {
+        if let Ok(path) = env::var("RECURL_ENGINE_PATH") {
             let path = PathBuf::from(path);
             if path.exists() {
                 return Ok(path);
@@ -56,7 +56,7 @@ pub fn find_engine(engine_type: EngineType) -> io::Result<PathBuf> {
         }
     }
 
-    // 2. Check relative to the rcurl binary (bin/ directory)
+    // 2. Check relative to the recurl binary (bin/ directory)
     if let Ok(exe_path) = env::current_exe() {
         if let Some(exe_dir) = exe_path.parent() {
             // Check bin/ subdirectory
@@ -65,7 +65,7 @@ pub fn find_engine(engine_type: EngineType) -> io::Result<PathBuf> {
                 return Ok(bin_path);
             }
 
-            // Check same directory as rcurl
+            // Check same directory as recurl
             let same_dir_path = exe_dir.join(&binary_name);
             if same_dir_path.exists() {
                 return Ok(same_dir_path);
@@ -82,7 +82,7 @@ pub fn find_engine(engine_type: EngineType) -> io::Result<PathBuf> {
 
     Err(io::Error::new(
         io::ErrorKind::NotFound,
-        format!("{} not found. Set RCURL_ENGINE_PATH or install rcurl properly.", binary_name),
+        format!("{} not found. Set RECURL_ENGINE_PATH or install recurl properly.", binary_name),
     ))
 }
 

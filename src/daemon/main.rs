@@ -1,4 +1,4 @@
-//! rcurld - rcurl daemon
+//! recurld - recurl daemon
 //!
 //! Keeps Chromium instances warm for fast JS preflight operations.
 
@@ -33,7 +33,7 @@ async fn main() {
         "--version" | "-V" => print_version(),
         _ => {
             eprintln!("Unknown command: {}", command);
-            eprintln!("Run 'rcurld --help' for usage");
+            eprintln!("Run 'recurld --help' for usage");
             std::process::exit(1);
         }
     }
@@ -41,10 +41,10 @@ async fn main() {
 
 fn print_help() {
     println!(
-        r#"rcurld - rcurl daemon
+        r#"recurld - recurl daemon
 
 USAGE:
-    rcurld [COMMAND]
+    recurld [COMMAND]
 
 COMMANDS:
     start       Start the daemon (default)
@@ -56,32 +56,32 @@ OPTIONS:
     -V, --version   Show version
 
 ENVIRONMENT:
-    RCURL_DAEMON_IDLE_MS    Idle timeout before auto-shutdown (default: 60000)
-    RCURL_POOL_MIN          Minimum browser pool size (default: 1)
-    RCURL_POOL_MAX          Maximum browser pool size (default: 3)
+    RECURL_DAEMON_IDLE_MS    Idle timeout before auto-shutdown (default: 60000)
+    RECURL_POOL_MIN          Minimum browser pool size (default: 1)
+    RECURL_POOL_MAX          Maximum browser pool size (default: 3)
 "#
     );
 }
 
 fn print_version() {
-    println!("rcurld {}", env!("CARGO_PKG_VERSION"));
+    println!("recurld {}", env!("CARGO_PKG_VERSION"));
 }
 
 async fn run_daemon() {
-    eprintln!("[rcurld] Starting daemon...");
+    eprintln!("[recurld] Starting daemon...");
 
     // Get configuration from environment
-    let idle_timeout_ms = std::env::var("RCURL_DAEMON_IDLE_MS")
+    let idle_timeout_ms = std::env::var("RECURL_DAEMON_IDLE_MS")
         .ok()
         .and_then(|s| s.parse().ok())
         .unwrap_or(DEFAULT_IDLE_TIMEOUT_SECS * 1000);
 
-    let pool_min = std::env::var("RCURL_POOL_MIN")
+    let pool_min = std::env::var("RECURL_POOL_MIN")
         .ok()
         .and_then(|s| s.parse().ok())
         .unwrap_or(1);
 
-    let pool_max = std::env::var("RCURL_POOL_MAX")
+    let pool_max = std::env::var("RECURL_POOL_MAX")
         .ok()
         .and_then(|s| s.parse().ok())
         .unwrap_or(3);
@@ -98,21 +98,21 @@ async fn run_daemon() {
     let pool = Arc::new(BrowserPool::new(pool_config));
 
     // Warm up pool
-    eprintln!("[rcurld] Warming up browser pool...");
+    eprintln!("[recurld] Warming up browser pool...");
     if let Err(e) = pool.warmup().await {
-        eprintln!("[rcurld] Warning: Failed to warm up pool: {}", e);
+        eprintln!("[recurld] Warning: Failed to warm up pool: {}", e);
     }
 
     // Bind server socket
     let server = match ipc::DaemonServer::bind().await {
         Ok(s) => s,
         Err(e) => {
-            eprintln!("[rcurld] Failed to bind socket: {}", e);
+            eprintln!("[recurld] Failed to bind socket: {}", e);
             std::process::exit(1);
         }
     };
 
-    eprintln!("[rcurld] Listening on {:?}", server.path());
+    eprintln!("[recurld] Listening on {:?}", server.path());
 
     // Shutdown flag
     let shutdown = Arc::new(AtomicBool::new(false));
@@ -133,10 +133,10 @@ async fn run_daemon() {
 
             tokio::select! {
                 _ = sigterm.recv() => {
-                    eprintln!("[rcurld] Received SIGTERM");
+                    eprintln!("[recurld] Received SIGTERM");
                 }
                 _ = sigint.recv() => {
-                    eprintln!("[rcurld] Received SIGINT");
+                    eprintln!("[recurld] Received SIGINT");
                 }
             }
 
@@ -157,7 +157,7 @@ async fn run_daemon() {
 
             let elapsed = idle_last.lock().unwrap().elapsed();
             if elapsed > idle_timeout {
-                eprintln!("[rcurld] Idle timeout, shutting down...");
+                eprintln!("[recurld] Idle timeout, shutting down...");
                 idle_shutdown.store(true, Ordering::SeqCst);
                 break;
             }
@@ -179,7 +179,7 @@ async fn run_daemon() {
         let mut conn = match accept_result {
             Ok(Ok(conn)) => conn,
             Ok(Err(e)) => {
-                eprintln!("[rcurld] Accept error: {}", e);
+                eprintln!("[recurld] Accept error: {}", e);
                 continue;
             }
             Err(_) => continue, // Timeout, check shutdown flag
@@ -198,7 +198,7 @@ async fn run_daemon() {
                     Ok(Some(request)) => {
                         let response = handle_request(&pool_clone, request, &shutdown_check).await;
                         if let Err(e) = conn.write_response(&response).await {
-                            eprintln!("[rcurld] Write error: {}", e);
+                            eprintln!("[recurld] Write error: {}", e);
                             break;
                         }
 
@@ -209,7 +209,7 @@ async fn run_daemon() {
                     }
                     Ok(None) => break, // Connection closed
                     Err(e) => {
-                        eprintln!("[rcurld] Read error: {}", e);
+                        eprintln!("[recurld] Read error: {}", e);
                         break;
                     }
                 }
@@ -217,12 +217,12 @@ async fn run_daemon() {
         });
     }
 
-    eprintln!("[rcurld] Shutting down...");
+    eprintln!("[recurld] Shutting down...");
 
     // Cleanup socket
     let _ = ipc::remove_socket();
 
-    eprintln!("[rcurld] Goodbye!");
+    eprintln!("[recurld] Goodbye!");
 }
 
 async fn handle_request(
@@ -272,7 +272,7 @@ async fn query_status() {
                     requests_served,
                     active_requests,
                 }) => {
-                    println!("rcurld status:");
+                    println!("recurld status:");
                     println!("  Version: {}", version);
                     println!("  Uptime: {}s", uptime_secs);
                     println!("  Pool size: {} browsers", pool_size);

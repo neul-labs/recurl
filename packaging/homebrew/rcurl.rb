@@ -1,59 +1,59 @@
-# Homebrew formula for rcurl
-# Install with: brew install rcurl/tap/rcurl
-# Or tap first: brew tap rcurl/tap && brew install rcurl
+# Homebrew formula for recurl
+# Install with: brew install recurl/tap/recurl
+# Or tap first: brew tap recurl/tap && brew install recurl
 
-class Rcurl < Formula
+class Recurl < Formula
   desc "Drop-in curl replacement with automatic anti-bot bypass"
-  homepage "https://github.com/user/rcurl"
+  homepage "https://github.com/user/recurl"
   version "0.1.0"
   license "MIT"
 
   on_macos do
     on_arm do
-      url "https://github.com/user/rcurl/releases/download/v#{version}/rcurl-darwin-aarch64.tar.gz"
+      url "https://github.com/user/recurl/releases/download/v#{version}/recurl-darwin-aarch64.tar.gz"
       sha256 "PLACEHOLDER_SHA256_DARWIN_ARM64"
     end
     on_intel do
-      url "https://github.com/user/rcurl/releases/download/v#{version}/rcurl-darwin-x86_64.tar.gz"
+      url "https://github.com/user/recurl/releases/download/v#{version}/recurl-darwin-x86_64.tar.gz"
       sha256 "PLACEHOLDER_SHA256_DARWIN_X64"
     end
   end
 
   on_linux do
     on_arm do
-      url "https://github.com/user/rcurl/releases/download/v#{version}/rcurl-linux-aarch64.tar.gz"
+      url "https://github.com/user/recurl/releases/download/v#{version}/recurl-linux-aarch64.tar.gz"
       sha256 "PLACEHOLDER_SHA256_LINUX_ARM64"
     end
     on_intel do
-      url "https://github.com/user/rcurl/releases/download/v#{version}/rcurl-linux-x86_64.tar.gz"
+      url "https://github.com/user/recurl/releases/download/v#{version}/recurl-linux-x86_64.tar.gz"
       sha256 "PLACEHOLDER_SHA256_LINUX_X64"
     end
   end
 
   def install
-    bin.install "bin/rcurl"
-    bin.install "bin/rcurld" if File.exist?("bin/rcurld")
+    bin.install "bin/recurl"
+    bin.install "bin/recurld" if File.exist?("bin/recurld")
   end
 
   def caveats
     <<~EOS
-      rcurl is installed! To use it as a drop-in curl replacement, add an alias:
+      recurl is installed! To use it as a drop-in curl replacement, add an alias:
 
-        echo 'alias curl="rcurl"' >> ~/.zshrc   # or ~/.bashrc
+        echo 'alias curl="recurl"' >> ~/.zshrc   # or ~/.bashrc
 
-      Or use rcurl directly:
+      Or use recurl directly:
 
-        rcurl https://example.com
+        recurl https://example.com
 
       For JS preflight with warm browsers, start the daemon:
 
-        rcurld start
+        recurld start
 
     EOS
   end
 
   test do
-    system "#{bin}/rcurl", "--version"
-    system "#{bin}/rcurl", "-s", "https://httpbin.org/get"
+    system "#{bin}/recurl", "--version"
+    system "#{bin}/recurl", "-s", "https://httpbin.org/get"
   end
 end

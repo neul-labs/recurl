@@ -13,7 +13,7 @@ mod engine;
 mod impersonation;
 mod js_preflight;
 
-use config::RcurlConfig;
+use config::RecurlConfig;
 use detection::DetectionResult;
 use engine::find_curl_engine;
 use impersonation::{execute_with_escalation, ImpersonationProfile};
@@ -22,27 +22,27 @@ use js_preflight::{execute_preflight_sync, PreflightOptions};
 fn main() -> ExitCode {
     let args: Vec<String> = env::args().skip(1).collect();
 
-    // Parse rcurl-specific flags and separate curl flags
-    let (config, curl_args) = RcurlConfig::parse(&args);
+    // Parse recurl-specific flags and separate curl flags
+    let (config, curl_args) = RecurlConfig::parse(&args);
 
     // Debug output
     if config.debug {
-        eprintln!("[rcurl] version: {}", env!("CARGO_PKG_VERSION"));
-        eprintln!("[rcurl] mode: {}", if config.strict { "strict" } else { "smart" });
-        eprintln!("[rcurl] curl args: {:?}", curl_args);
+        eprintln!("[recurl] version: {}", env!("CARGO_PKG_VERSION"));
+        eprintln!("[recurl] mode: {}", if config.strict { "strict" } else { "smart" });
+        eprintln!("[recurl] curl args: {:?}", curl_args);
     }
 
     // Find curl_engine binary
     let curl_engine = match find_curl_engine() {
         Ok(path) => path,
         Err(e) => {
-            eprintln!("[rcurl] error: {}", e);
+            eprintln!("[recurl] error: {}", e);
             return ExitCode::from(1);
         }
     };
 
     if config.debug {
-        eprintln!("[rcurl] engine: {}", curl_engine.display());
+        eprintln!("[recurl] engine: {}", curl_engine.display());
     }
 
     // Execute based on mode
@@ -51,7 +51,7 @@ fn main() -> ExitCode {
         match execute_curl_passthrough(&curl_engine, &curl_args) {
             Ok(code) => ExitCode::from(code),
             Err(e) => {
-                eprintln!("[rcurl] error: {}", e);
+                eprintln!("[recurl] error: {}", e);
                 ExitCode::from(1)
             }
         }
@@ -60,7 +60,7 @@ fn main() -> ExitCode {
         match execute_curl_smart(&curl_engine, &curl_args, &config) {
             Ok(code) => ExitCode::from(code),
             Err(e) => {
-                eprintln!("[rcurl] error: {}", e);
+                eprintln!("[recurl] error: {}", e);
                 ExitCode::from(1)
             }
         }
@@ -81,11 +81,11 @@ fn execute_curl_passthrough(engine: &PathBuf, args: &[String]) -> io::Result<u8>
 }
 
 /// Execute curl_engine with output capture for analysis (smart mode)
-fn execute_curl_smart(engine: &PathBuf, args: &[String], config: &RcurlConfig) -> io::Result<u8> {
-    // If --rcurl-js is set, skip directly to JS preflight
+fn execute_curl_smart(engine: &PathBuf, args: &[String], config: &RecurlConfig) -> io::Result<u8> {
+    // If --recurl-js is set, skip directly to JS preflight
     if config.js {
         if config.debug {
-            eprintln!("[rcurl] --rcurl-js flag set, using JS preflight directly");
+            eprintln!("[recurl] --recurl-js flag set, using JS preflight directly");
         }
         return execute_js_preflight_only(engine, args, config);
     }
@@ -100,14 +100,14 @@ fn execute_curl_smart(engine: &PathBuf, args: &[String], config: &RcurlConfig) -
     let has_write_out = args.iter().any(|a| a == "-w" || a.starts_with("--write-out"));
 
     // Add our status code extraction if user doesn't have -w
-    let status_marker = "\n__RCURL_STATUS__:%{http_code}";
+    let status_marker = "\n__RECURL_STATUS__:%{http_code}";
     if !has_write_out {
         enhanced_args.push("-w".to_string());
         enhanced_args.push(status_marker.to_string());
     }
 
     if config.debug {
-        eprintln!("[rcurl] executing curl_engine...");
+        eprintln!("[recurl] executing curl_engine...");
     }
 
     // Execute and capture output
@@ -131,13 +131,13 @@ fn execute_curl_smart(engine: &PathBuf, args: &[String], config: &RcurlConfig) -
     let detection = DetectionResult::analyze(status_code, &stdout);
 
     if config.debug {
-        eprintln!("[rcurl] exit code: {}", exit_code);
+        eprintln!("[recurl] exit code: {}", exit_code);
         if let Some(code) = status_code {
-            eprintln!("[rcurl] HTTP status: {}", code);
+            eprintln!("[recurl] HTTP status: {}", code);
         }
-        eprintln!("[rcurl] detection: {}", detection.summary);
+        eprintln!("[recurl] detection: {}", detection.summary);
         if detection.should_escalate {
-            eprintln!("[rcurl] would escalate: impersonation -> js preflight");
+            eprintln!("[recurl] would escalate: impersonation -> js preflight");
         }
     }
 
@@ -150,7 +150,7 @@ fn execute_curl_smart(engine: &PathBuf, args: &[String], config: &RcurlConfig) -
             .and_then(|s| ImpersonationProfile::from_str(s));
 
         if config.debug {
-            eprintln!("[rcurl] attempting impersonation escalation...");
+            eprintln!("[recurl] attempting impersonation escalation...");
         }
 
         // Try impersonation with our enhanced args (to capture status)
@@ -167,13 +167,13 @@ fn execute_curl_smart(engine: &PathBuf, args: &[String], config: &RcurlConfig) -
                 let imp_detection = DetectionResult::analyze(imp_status, &imp_stdout);
 
                 if config.debug {
-                    eprintln!("[rcurl] impersonation result: {}", imp_detection.summary);
+                    eprintln!("[recurl] impersonation result: {}", imp_detection.summary);
                 }
 
                 // If impersonation succeeded (no blocking), use that response
                 if !imp_detection.should_escalate {
                     if config.debug {
-                        eprintln!("[rcurl] impersonation bypassed blocking");
+                        eprintln!("[recurl] impersonation bypassed blocking");
                     }
                     io::stdout().write_all(&imp_stdout)?;
                     io::stdout().flush()?;
@@ -195,13 +195,13 @@ fn execute_curl_smart(engine: &PathBuf, args: &[String], config: &RcurlConfig) -
     Ok(exit_code)
 }
 
-/// Execute with JS preflight only (when --rcurl-js is set)
-fn execute_js_preflight_only(engine: &PathBuf, args: &[String], config: &RcurlConfig) -> io::Result<u8> {
+/// Execute with JS preflight only (when --recurl-js is set)
+fn execute_js_preflight_only(engine: &PathBuf, args: &[String], config: &RecurlConfig) -> io::Result<u8> {
     // Extract URL from args
     let url = match extract_url_from_args(args) {
         Some(u) => u,
         None => {
-            eprintln!("[rcurl] error: no URL found in arguments");
+            eprintln!("[recurl] error: no URL found in arguments");
             return Ok(1);
         }
     };
@@ -219,7 +219,7 @@ fn execute_js_preflight_only(engine: &PathBuf, args: &[String], config: &RcurlCo
 
     if !preflight_result.success {
         eprintln!(
-            "[rcurl] JS preflight failed: {}",
+            "[recurl] JS preflight failed: {}",
             preflight_result.error.as_deref().unwrap_or("unknown error")
         );
         return Ok(1);
@@ -229,7 +229,7 @@ fn execute_js_preflight_only(engine: &PathBuf, args: &[String], config: &RcurlCo
     if config.js_rendered {
         if let Some(html) = preflight_result.rendered_html {
             if config.debug {
-                eprintln!("[rcurl] returning rendered HTML");
+                eprintln!("[recurl] returning rendered HTML");
             }
             io::stdout().write_all(html.as_bytes())?;
             io::stdout().flush()?;
@@ -240,7 +240,7 @@ fn execute_js_preflight_only(engine: &PathBuf, args: &[String], config: &RcurlCo
     // Replay with extracted cookies
     if config.debug {
         eprintln!(
-            "[rcurl] replaying with {} cookies from JS preflight",
+            "[recurl] replaying with {} cookies from JS preflight",
             preflight_result.cookies.count()
         );
     }
@@ -278,7 +278,7 @@ fn execute_js_preflight_only(engine: &PathBuf, args: &[String], config: &RcurlCo
 fn try_js_preflight(
     engine: &PathBuf,
     original_args: &[String],
-    config: &RcurlConfig,
+    config: &RecurlConfig,
     enhanced_args: &[String],
     has_write_out: bool,
     status_marker: &str,
@@ -287,14 +287,14 @@ fn try_js_preflight(
     let url = extract_url_from_args(original_args);
     if url.is_none() {
         if config.debug {
-            eprintln!("[rcurl] JS preflight: no URL found in args, skipping");
+            eprintln!("[recurl] JS preflight: no URL found in args, skipping");
         }
         return Ok(None);
     }
     let url = url.unwrap();
 
     if config.debug {
-        eprintln!("[rcurl] escalating to JS preflight...");
+        eprintln!("[recurl] escalating to JS preflight...");
     }
 
     // Build preflight options from config
@@ -311,7 +311,7 @@ fn try_js_preflight(
     if !preflight_result.success {
         if config.debug {
             eprintln!(
-                "[rcurl] JS preflight failed: {}",
+                "[recurl] JS preflight failed: {}",
                 preflight_result.error.as_deref().unwrap_or("unknown error")
             );
         }
@@ -322,7 +322,7 @@ fn try_js_preflight(
     if config.js_rendered {
         if let Some(html) = preflight_result.rendered_html {
             if config.debug {
-                eprintln!("[rcurl] JS preflight: returning rendered HTML");
+                eprintln!("[recurl] JS preflight: returning rendered HTML");
             }
             io::stdout().write_all(html.as_bytes())?;
             io::stdout().flush()?;
@@ -333,7 +333,7 @@ fn try_js_preflight(
     // Replay with extracted cookies
     if config.debug {
         eprintln!(
-            "[rcurl] JS preflight: replaying with {} cookies",
+            "[recurl] JS preflight: replaying with {} cookies",
             preflight_result.cookies.count()
         );
     }
@@ -380,12 +380,12 @@ fn try_js_preflight(
     let replay_detection = DetectionResult::analyze(replay_status, &replay_stdout);
 
     if config.debug {
-        eprintln!("[rcurl] JS preflight replay: {}", replay_detection.summary);
+        eprintln!("[recurl] JS preflight replay: {}", replay_detection.summary);
     }
 
     if !replay_detection.should_escalate {
         if config.debug {
-            eprintln!("[rcurl] JS preflight: success!");
+            eprintln!("[recurl] JS preflight: success!");
         }
         io::stdout().write_all(&replay_stdout)?;
         io::stdout().flush()?;
@@ -394,7 +394,7 @@ fn try_js_preflight(
 
     // Replay still blocked - give up
     if config.debug {
-        eprintln!("[rcurl] JS preflight: replay still blocked, giving up");
+        eprintln!("[recurl] JS preflight: replay still blocked, giving up");
     }
     Ok(None)
 }
@@ -457,16 +457,16 @@ mod tests {
 
     #[test]
     fn test_extract_status_code() {
-        let marker = "\n__RCURL_STATUS__:%{http_code}";
+        let marker = "\n__RECURL_STATUS__:%{http_code}";
 
         // Test with marker present
-        let output = b"Hello World\n__RCURL_STATUS__:200";
+        let output = b"Hello World\n__RECURL_STATUS__:200";
         let (content, code) = extract_status_code(output, marker);
         assert_eq!(content, b"Hello World");
         assert_eq!(code, Some(200));
 
         // Test with 403
-        let output = b"Access Denied\n__RCURL_STATUS__:403";
+        let output = b"Access Denied\n__RECURL_STATUS__:403";
         let (content, code) = extract_status_code(output, marker);
         assert_eq!(content, b"Access Denied");
         assert_eq!(code, Some(403));

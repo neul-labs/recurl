@@ -1,6 +1,6 @@
-# rcurl Docker image
-# Build: docker build -t rcurl .
-# Run: docker run --rm rcurl https://example.com
+# recurl Docker image
+# Build: docker build -t recurl .
+# Run: docker run --rm recurl https://example.com
 
 # Build stage
 FROM rust:1.75-bookworm AS builder
@@ -20,7 +20,7 @@ COPY tests ./tests
 
 # Build release binaries
 RUN cargo build --release
-RUN cargo build --release --bin rcurld --features daemon
+RUN cargo build --release --bin recurld --features daemon
 
 # Runtime stage
 FROM debian:bookworm-slim
@@ -34,25 +34,25 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
-RUN useradd -m -s /bin/bash rcurl
+RUN useradd -m -s /bin/bash recurl
 
 # Copy binaries
-COPY --from=builder /build/target/release/rcurl /usr/local/bin/
-COPY --from=builder /build/target/release/rcurld /usr/local/bin/
+COPY --from=builder /build/target/release/recurl /usr/local/bin/
+COPY --from=builder /build/target/release/recurld /usr/local/bin/
 
 # Set permissions
-RUN chmod +x /usr/local/bin/rcurl /usr/local/bin/rcurld
+RUN chmod +x /usr/local/bin/recurl /usr/local/bin/recurld
 
 # Switch to non-root user
-USER rcurl
-WORKDIR /home/rcurl
+USER recurl
+WORKDIR /home/recurl
 
 # Default command
-ENTRYPOINT ["rcurl"]
+ENTRYPOINT ["recurl"]
 CMD ["--help"]
 
 # Labels
-LABEL org.opencontainers.image.title="rcurl"
+LABEL org.opencontainers.image.title="recurl"
 LABEL org.opencontainers.image.description="Drop-in curl replacement with automatic anti-bot bypass"
-LABEL org.opencontainers.image.source="https://github.com/user/rcurl"
+LABEL org.opencontainers.image.source="https://github.com/user/recurl"
 LABEL org.opencontainers.image.licenses="MIT"

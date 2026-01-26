@@ -1,7 +1,7 @@
 //! Failure detection module
 //!
 //! Detects when a response indicates bot blocking (403, captcha, etc.)
-//! so rcurl can decide whether to escalate to impersonation or JS preflight.
+//! so recurl can decide whether to escalate to impersonation or JS preflight.
 
 mod patterns;
 mod status;

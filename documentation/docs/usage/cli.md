@@ -1,35 +1,35 @@
 # CLI Reference
 
-Complete reference for rcurl command-line options.
+Complete reference for recurl command-line options.
 
 ---
 
 ## Basic Usage
 
 ```bash
-rcurl [OPTIONS] [curl flags...] <URL>
+recurl [OPTIONS] [curl flags...] <URL>
 ```
 
-rcurl accepts all standard curl flags. They are passed through unchanged to the underlying curl engine.
+recurl accepts all standard curl flags. They are passed through unchanged to the underlying curl engine.
 
 ---
 
-## rcurl-Specific Flags
+## recurl-Specific Flags
 
-All rcurl flags are namespaced with `--rcurl-` to avoid conflicts with curl flags.
+All recurl flags are namespaced with `--recurl-` to avoid conflicts with curl flags.
 
 ### Mode Control
 
 | Flag | Description |
 |------|-------------|
-| `--rcurl-strict` | Disable all fallback, pure curl passthrough |
-| `--rcurl-debug` | Show escalation steps and diagnostic output |
+| `--recurl-strict` | Disable all fallback, pure curl passthrough |
+| `--recurl-debug` | Show escalation steps and diagnostic output |
 
 ### Impersonation
 
 | Flag | Description |
 |------|-------------|
-| `--rcurl-impersonate <profile>` | Force impersonation with specified profile |
+| `--recurl-impersonate <profile>` | Force impersonation with specified profile |
 
 Available profiles:
 
@@ -47,17 +47,17 @@ Available profiles:
 
 | Flag | Description |
 |------|-------------|
-| `--rcurl-js` | Force JS preflight (skip to Chromium) |
-| `--rcurl-js-rendered` | Return rendered DOM instead of curl replay |
-| `--rcurl-js-wait <selector>` | Wait for CSS selector before proceeding |
-| `--rcurl-js-timeout <ms>` | JS preflight timeout (default: 30000) |
+| `--recurl-js` | Force JS preflight (skip to Chromium) |
+| `--recurl-js-rendered` | Return rendered DOM instead of curl replay |
+| `--recurl-js-wait <selector>` | Wait for CSS selector before proceeding |
+| `--recurl-js-timeout <ms>` | JS preflight timeout (default: 30000) |
 
 ### Daemon Control
 
 | Flag | Description |
 |------|-------------|
-| `--rcurl-daemon on` | Force daemon usage for JS preflight |
-| `--rcurl-daemon off` | Disable daemon, run Chromium inline |
+| `--recurl-daemon on` | Force daemon usage for JS preflight |
+| `--recurl-daemon off` | Disable daemon, run Chromium inline |
 
 ---
 
@@ -77,90 +77,90 @@ Available profiles:
 
 ```bash
 # Simple GET
-rcurl https://example.com
+recurl https://example.com
 
 # POST with JSON
-rcurl -X POST \
+recurl -X POST \
     -H "Content-Type: application/json" \
     -d '{"key": "value"}' \
     https://api.example.com
 
 # Download file
-rcurl -o output.html https://example.com
+recurl -o output.html https://example.com
 
 # Follow redirects
-rcurl -L https://httpbin.org/redirect/3
+recurl -L https://httpbin.org/redirect/3
 ```
 
 ### With Debug Output
 
 ```bash
-# See what rcurl is doing
-rcurl --rcurl-debug https://protected-site.com
+# See what recurl is doing
+recurl --recurl-debug https://protected-site.com
 
 # Combined with curl verbose
-rcurl --rcurl-debug -v https://protected-site.com
+recurl --recurl-debug -v https://protected-site.com
 ```
 
 ### Strict Mode
 
 ```bash
 # No fallback, identical to curl
-rcurl --rcurl-strict https://example.com
+recurl --recurl-strict https://example.com
 
 # Via environment
-RCURL_STRICT=1 rcurl https://example.com
+RCURL_STRICT=1 recurl https://example.com
 ```
 
 ### Force Impersonation
 
 ```bash
 # Use Chrome fingerprint
-rcurl --rcurl-impersonate chrome https://example.com
+recurl --recurl-impersonate chrome https://example.com
 
 # Use Firefox fingerprint
-rcurl --rcurl-impersonate firefox https://example.com
+recurl --recurl-impersonate firefox https://example.com
 ```
 
 ### Force JS Preflight
 
 ```bash
 # Skip to Chromium
-rcurl --rcurl-js https://spa-site.com
+recurl --recurl-js https://spa-site.com
 
 # Wait for element
-rcurl --rcurl-js --rcurl-js-wait ".content" https://spa-site.com
+recurl --recurl-js --recurl-js-wait ".content" https://spa-site.com
 
 # Get rendered HTML
-rcurl --rcurl-js-rendered https://spa-site.com
+recurl --recurl-js-rendered https://spa-site.com
 
 # Custom timeout (60 seconds)
-rcurl --rcurl-js --rcurl-js-timeout 60000 https://slow-site.com
+recurl --recurl-js --recurl-js-timeout 60000 https://slow-site.com
 ```
 
 ### Daemon Control
 
 ```bash
 # Force daemon usage
-rcurl --rcurl-daemon on --rcurl-js https://example.com
+recurl --recurl-daemon on --recurl-js https://example.com
 
 # Disable daemon (run inline)
-rcurl --rcurl-daemon off --rcurl-js https://example.com
+recurl --recurl-daemon off --recurl-js https://example.com
 ```
 
 ### Combined Options
 
 ```bash
 # Debug + JS preflight + wait for element
-rcurl --rcurl-debug \
-    --rcurl-js \
-    --rcurl-js-wait "#app-ready" \
-    --rcurl-js-timeout 45000 \
+recurl --recurl-debug \
+    --recurl-js \
+    --recurl-js-wait "#app-ready" \
+    --recurl-js-timeout 45000 \
     https://spa-site.com
 
 # Save rendered HTML to file
-rcurl --rcurl-js-rendered \
-    --rcurl-js-wait ".content-loaded" \
+recurl --recurl-js-rendered \
+    --recurl-js-wait ".content-loaded" \
     -o rendered.html \
     https://spa-site.com
 ```
@@ -169,52 +169,52 @@ rcurl --rcurl-js-rendered \
 
 ## curl Flag Compatibility
 
-All curl flags work with rcurl:
+All curl flags work with recurl:
 
 ```bash
 # Headers
-rcurl -H "Authorization: Bearer token" \
+recurl -H "Authorization: Bearer token" \
     -H "Accept: application/json" \
     https://api.example.com
 
 # Auth
-rcurl -u username:password https://example.com
-rcurl --basic -u user:pass https://example.com
+recurl -u username:password https://example.com
+recurl --basic -u user:pass https://example.com
 
 # Data
-rcurl -d "param=value" https://example.com
-rcurl --data-binary @file.json https://example.com
-rcurl -F "file=@upload.txt" https://example.com
+recurl -d "param=value" https://example.com
+recurl --data-binary @file.json https://example.com
+recurl -F "file=@upload.txt" https://example.com
 
 # Output
-rcurl -o output.html https://example.com
-rcurl -O https://example.com/file.zip
-rcurl -D headers.txt https://example.com
-rcurl -i https://example.com  # Include headers in output
+recurl -o output.html https://example.com
+recurl -O https://example.com/file.zip
+recurl -D headers.txt https://example.com
+recurl -i https://example.com  # Include headers in output
 
 # TLS
-rcurl -k https://self-signed.example.com  # Skip verification
-rcurl --cacert ca.pem https://example.com
-rcurl --cert client.pem https://example.com
+recurl -k https://self-signed.example.com  # Skip verification
+recurl --cacert ca.pem https://example.com
+recurl --cert client.pem https://example.com
 
 # Timeouts
-rcurl --connect-timeout 10 https://example.com
-rcurl --max-time 30 https://example.com
+recurl --connect-timeout 10 https://example.com
+recurl --max-time 30 https://example.com
 
 # Redirects
-rcurl -L https://example.com  # Follow redirects
-rcurl -L --max-redirs 5 https://example.com
+recurl -L https://example.com  # Follow redirects
+recurl -L --max-redirs 5 https://example.com
 
 # Proxy
-rcurl -x http://proxy:8080 https://example.com
-rcurl --proxy-user user:pass -x http://proxy:8080 https://example.com
+recurl -x http://proxy:8080 https://example.com
+recurl --proxy-user user:pass -x http://proxy:8080 https://example.com
 ```
 
 ---
 
 ## Exit Codes
 
-rcurl preserves curl exit codes:
+recurl preserves curl exit codes:
 
 | Code | Description |
 |------|-------------|

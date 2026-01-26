@@ -163,7 +163,7 @@ pub fn execute_with_escalation(
         let result = execute_impersonation(profile, args);
         if debug {
             eprintln!(
-                "[rcurl] impersonation: {} -> {}",
+                "[recurl] impersonation: {} -> {}",
                 profile.name(),
                 if result.available {
                     if result.is_success() { "success" } else { "failed" }
@@ -181,7 +181,7 @@ pub fn execute_with_escalation(
 
         if debug {
             eprintln!(
-                "[rcurl] impersonation: {} -> {}",
+                "[recurl] impersonation: {} -> {}",
                 profile.name(),
                 if result.available {
                     if result.is_success() { "success" } else { "failed" }

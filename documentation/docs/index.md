@@ -1,12 +1,12 @@
-# rcurl
+# recurl
 
 **Drop-in curl replacement with automatic anti-bot bypass**
 
-rcurl is a smart curl wrapper that transparently handles anti-bot protections. It executes a real curl engine and automatically escalates through impersonation and JavaScript rendering when requests are blocked.
+recurl is a smart curl wrapper that transparently handles anti-bot protections. It executes a real curl engine and automatically escalates through impersonation and JavaScript rendering when requests are blocked.
 
 ---
 
-## Why rcurl?
+## Why recurl?
 
 Modern websites increasingly use bot detection services that block standard HTTP clients:
 
@@ -14,7 +14,7 @@ Modern websites increasingly use bot detection services that block standard HTTP
 - **JavaScript Challenges** (Cloudflare Turnstile, etc.) require browser execution
 - **Behavioral Analysis** flags automated request patterns
 
-rcurl handles all of this automatically. Just use it like curl.
+recurl handles all of this automatically. Just use it like curl.
 
 ---
 
@@ -57,23 +57,23 @@ rcurl handles all of this automatically. Just use it like curl.
 curl https://protected-site.com
 # Returns: 403 Forbidden
 
-# rcurl - automatic bypass
-rcurl https://protected-site.com
+# recurl - automatic bypass
+recurl https://protected-site.com
 # Returns: 200 OK with actual content
 ```
 
 With debug output:
 
 ```bash
-rcurl --rcurl-debug https://protected-site.com
-# [rcurl] curl_engine: 403 Cloudflare challenge
-# [rcurl] Escalating: impersonation (chrome)
-# [rcurl] curl_chrome: 403 JS challenge required
-# [rcurl] Escalating: JS preflight
-# [rcurl] Chromium: navigating...
-# [rcurl] Chromium: challenge solved
-# [rcurl] Replaying with cookies
-# [rcurl] curl_engine: 200 OK
+recurl --recurl-debug https://protected-site.com
+# [recurl] curl_engine: 403 Cloudflare challenge
+# [recurl] Escalating: impersonation (chrome)
+# [recurl] curl_chrome: 403 JS challenge required
+# [recurl] Escalating: JS preflight
+# [recurl] Chromium: navigating...
+# [recurl] Chromium: challenge solved
+# [recurl] Replaying with cookies
+# [recurl] curl_engine: 200 OK
 ```
 
 ---
@@ -81,7 +81,7 @@ rcurl --rcurl-debug https://protected-site.com
 ## How It Works
 
 ```
-curl (alias) → rcurl (shim)
+curl (alias) → recurl (shim)
                    │
                    ├─► curl_engine → success? done
                    │
@@ -98,7 +98,7 @@ curl (alias) → rcurl (shim)
 
 ## Supported Anti-Bot Services
 
-rcurl automatically detects and bypasses:
+recurl automatically detects and bypasses:
 
 | Service | Detection | Bypass |
 |---------|-----------|--------|
@@ -123,7 +123,7 @@ rcurl automatically detects and bypasses:
 
     ---
 
-    Install rcurl on Linux, macOS, or Windows
+    Install recurl on Linux, macOS, or Windows
 
 -   [:material-rocket-launch: **Quick Start**](getting-started/quickstart.md)
 
