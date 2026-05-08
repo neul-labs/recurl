@@ -1,6 +1,6 @@
-//! Daemon protocol definitions
+//! Shared protocol for daemon communication
 //!
-//! Defines the request/response messages exchanged between recurl and recurld.
+//! Used by both the recurl client binary and the recurld daemon binary.
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -81,7 +81,7 @@ pub enum DaemonResponse {
 impl DaemonRequest {
     /// Serialize request to JSON bytes with newline delimiter
     pub fn to_bytes(&self) -> Vec<u8> {
-        let mut bytes = serde_json::to_vec(self).unwrap_or_default();
+        let mut bytes = serde_json::to_vec(self).expect("DaemonRequest serialization should never fail");
         bytes.push(b'\n');
         bytes
     }
@@ -95,7 +95,7 @@ impl DaemonRequest {
 impl DaemonResponse {
     /// Serialize response to JSON bytes with newline delimiter
     pub fn to_bytes(&self) -> Vec<u8> {
-        let mut bytes = serde_json::to_vec(self).unwrap_or_default();
+        let mut bytes = serde_json::to_vec(self).expect("DaemonResponse serialization should never fail");
         bytes.push(b'\n');
         bytes
     }
@@ -163,5 +163,18 @@ mod tests {
         let bytes = resp.to_bytes();
         let parsed = DaemonResponse::from_bytes(&bytes[..bytes.len() - 1]).unwrap();
         assert!(matches!(parsed, DaemonResponse::Pong));
+    }
+
+    #[test]
+    fn test_shutdown_roundtrip() {
+        let req = DaemonRequest::Shutdown;
+        let bytes = req.to_bytes();
+        let parsed = DaemonRequest::from_bytes(&bytes[..bytes.len() - 1]).unwrap();
+        assert!(matches!(parsed, DaemonRequest::Shutdown));
+
+        let resp = DaemonResponse::ShutdownAck;
+        let bytes = resp.to_bytes();
+        let parsed = DaemonResponse::from_bytes(&bytes[..bytes.len() - 1]).unwrap();
+        assert!(matches!(parsed, DaemonResponse::ShutdownAck));
     }
 }

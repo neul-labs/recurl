@@ -2,7 +2,7 @@
 //!
 //! Connects to recurld for fast JS preflight operations.
 
-use std::collections::HashMap;
+use crate::protocol::{DaemonRequest, DaemonResponse};
 use std::io;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
@@ -12,54 +12,13 @@ use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 #[cfg(unix)]
 use tokio::net::UnixStream;
 
-use serde::{Deserialize, Serialize};
-
-/// Request to daemon
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
-pub enum DaemonRequest {
-    JsPreflight {
-        url: String,
-        timeout_ms: Option<u64>,
-        wait_selector: Option<String>,
-        return_html: bool,
-    },
-    Status,
-    Ping,
-}
-
-/// Response from daemon
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
-pub enum DaemonResponse {
-    PreflightSuccess {
-        cookies: HashMap<String, String>,
-        final_url: String,
-        html: Option<String>,
-    },
-    PreflightError {
-        error: String,
-    },
-    Status {
-        version: String,
-        uptime_secs: u64,
-        pool_size: usize,
-        requests_served: u64,
-        active_requests: usize,
-    },
-    Pong,
-    Error {
-        error: String,
-    },
-}
-
 /// Get the socket path
 fn get_socket_path() -> PathBuf {
     if cfg!(windows) {
         PathBuf::from(format!(r"\\.\pipe\recurl-{}", whoami()))
     } else {
-        let uid = unsafe { libc::getuid() };
-        PathBuf::from(format!("/tmp/recurl.{}.sock", uid))
+        let cache_dir = dirs::cache_dir().unwrap_or_else(|| PathBuf::from("/tmp"));
+        cache_dir.join("recurl").join("daemon.sock")
     }
 }
 
@@ -154,7 +113,7 @@ pub async fn daemon_preflight(
     serde_json::from_str(&line).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))
 }
 
-/// Execute JS preflight via daemon (sync wrapper)
+/// Execute JS preflight via daemon (sync wrapper with timeout)
 pub fn daemon_preflight_sync(
     url: &str,
     timeout_ms: Option<u64>,
@@ -163,12 +122,22 @@ pub fn daemon_preflight_sync(
 ) -> io::Result<DaemonResponse> {
     #[cfg(unix)]
     {
-        tokio::runtime::Runtime::new()?.block_on(daemon_preflight(
-            url,
-            timeout_ms,
-            wait_selector,
-            return_html,
-        ))
+        let rt = tokio::runtime::Runtime::new()?;
+        let deadline = std::time::Duration::from_millis(timeout_ms.unwrap_or(30000));
+        rt.block_on(async {
+            match tokio::time::timeout(
+                deadline,
+                daemon_preflight(url, timeout_ms, wait_selector, return_html),
+            )
+            .await
+            {
+                Ok(result) => result,
+                Err(_) => Err(io::Error::new(
+                    io::ErrorKind::TimedOut,
+                    "Daemon preflight timed out",
+                )),
+            }
+        })
     }
 
     #[cfg(windows)]
@@ -180,21 +149,6 @@ pub fn daemon_preflight_sync(
     }
 }
 
-/// Convert daemon response cookies to curl -b format
-pub fn cookies_to_curl_args(cookies: &HashMap<String, String>) -> Vec<String> {
-    if cookies.is_empty() {
-        return vec![];
-    }
-
-    let cookie_str = cookies
-        .iter()
-        .map(|(k, v)| format!("{}={}", k, v))
-        .collect::<Vec<_>>()
-        .join("; ");
-
-    vec!["-b".to_string(), cookie_str]
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -203,25 +157,5 @@ mod tests {
     fn test_socket_path() {
         let path = get_socket_path();
         assert!(!path.to_string_lossy().is_empty());
-    }
-
-    #[test]
-    fn test_cookies_to_curl_args() {
-        let mut cookies = HashMap::new();
-        cookies.insert("a".to_string(), "1".to_string());
-        cookies.insert("b".to_string(), "2".to_string());
-
-        let args = cookies_to_curl_args(&cookies);
-        assert_eq!(args.len(), 2);
-        assert_eq!(args[0], "-b");
-        assert!(args[1].contains("a=1"));
-        assert!(args[1].contains("b=2"));
-    }
-
-    #[test]
-    fn test_cookies_to_curl_args_empty() {
-        let cookies = HashMap::new();
-        let args = cookies_to_curl_args(&cookies);
-        assert!(args.is_empty());
     }
 }

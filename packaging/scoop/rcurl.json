@@ -1,11 +1,11 @@
 {
-    "version": "0.1.0",
+    "version": "0.1.2",
     "description": "Drop-in curl replacement with automatic anti-bot bypass",
-    "homepage": "https://github.com/user/recurl",
+    "homepage": "https://github.com/neul-labs/recurl",
     "license": "MIT",
     "architecture": {
         "64bit": {
-            "url": "https://github.com/user/recurl/releases/download/v0.1.0/recurl-windows-x86_64.zip",
+            "url": "https://github.com/neul-labs/recurl/releases/download/v0.1.0/recurl-windows-x86_64.zip",
             "hash": "PLACEHOLDER_SHA256_WINDOWS_X64"
         }
     },
@@ -13,12 +13,12 @@
         "bin\\recurl.exe"
     ],
     "checkver": {
-        "github": "https://github.com/user/recurl"
+        "github": "https://github.com/neul-labs/recurl"
     },
     "autoupdate": {
         "architecture": {
             "64bit": {
-                "url": "https://github.com/user/recurl/releases/download/v$version/recurl-windows-x86_64.zip"
+                "url": "https://github.com/neul-labs/recurl/releases/download/v$version/recurl-windows-x86_64.zip"
             }
         }
     },

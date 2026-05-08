@@ -1,0 +1,33 @@
+{
+  "name": "@neul-labs/recurl",
+  "version": "0.1.2",
+  "description": "Drop-in curl replacement with automatic anti-bot bypass",
+  "keywords": ["curl", "http", "anti-bot", "scraping", "cli"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/neul-labs/recurl.git"
+  },
+  "homepage": "https://github.com/neul-labs/recurl#readme",
+  "bugs": {
+    "url": "https://github.com/neul-labs/recurl/issues"
+  },
+  "bin": {
+    "recurl": "bin/recurl",
+    "recurld": "bin/recurld"
+  },
+  "scripts": {
+    "postinstall": "node install.js",
+    "preuninstall": "node uninstall.js"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "os": ["darwin", "linux", "win32"],
+  "cpu": ["x64", "arm64"],
+  "files": [
+    "install.js",
+    "uninstall.js",
+    "bin/"
+  ]
+}

@@ -123,7 +123,7 @@ recurl automatically detects and bypasses:
 
     ---
 
-    Install recurl on Linux, macOS, or Windows
+    Install via npm, pip, Homebrew, or Cargo on Linux, macOS, or Windows
 
 -   [:material-rocket-launch: **Quick Start**](getting-started/quickstart.md)
 

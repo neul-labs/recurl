@@ -304,7 +304,7 @@ which chromium google-chrome
 
 ### Report Issues
 
-Open an issue at [GitHub Issues](https://github.com/user/recurl/issues) with:
+Open an issue at [GitHub Issues](https://github.com/neul-labs/recurl/issues) with:
 
 1. recurl version
 2. Operating system and architecture

@@ -66,7 +66,17 @@ fn get_recurl_path() -> String {
         env::current_exe()
             .ok()
             .and_then(|p| p.parent().map(|p| p.to_path_buf()))
-            .map(|p| p.join("recurl").to_string_lossy().to_string())
+            .and_then(|p| {
+                // Test binary is in target/debug/deps/, recurl is in target/debug/
+                let candidate = if p.file_name() == Some(std::ffi::OsStr::new("deps")) {
+                    p.parent().map(|parent| parent.join("recurl"))
+                } else {
+                    Some(p.join("recurl"))
+                };
+                candidate
+                    .filter(|c| c.exists())
+                    .map(|c| c.to_string_lossy().to_string())
+            })
             .unwrap_or_else(|| "./target/debug/recurl".to_string())
     })
 }

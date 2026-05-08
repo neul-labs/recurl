@@ -1,13 +1,13 @@
 #!/bin/bash
 # Update package manifests with release checksums
-# Usage: ./scripts/update-release.sh v0.1.0
+# Usage: ./scripts/update-release.sh v0.1.2
 
 set -e
 
 VERSION="${1:-}"
 if [ -z "$VERSION" ]; then
     echo "Usage: $0 <version>"
-    echo "Example: $0 v0.1.0"
+    echo "Example: $0 v0.1.2"
     exit 1
 fi
 
@@ -17,7 +17,7 @@ VERSION_NUM="${VERSION#v}"
 echo "Updating package manifests for version $VERSION_NUM..."
 
 # GitHub release URL base
-RELEASE_URL="https://github.com/user/recurl/releases/download/$VERSION"
+RELEASE_URL="https://github.com/neul-labs/recurl/releases/download/$VERSION"
 
 # Download and compute checksums
 echo "Downloading release artifacts..."
@@ -88,6 +88,30 @@ if [ -f "$SCOOP_FILE" ]; then
     fi
 
     echo "  Updated $SCOOP_FILE"
+fi
+
+# Update external Homebrew tap
+EXTERNAL_TAP_FILE="../homebrew-tap/Formula/recurl.rb"
+if [ -f "$EXTERNAL_TAP_FILE" ]; then
+    echo "Updating external Homebrew tap..."
+    sed -i "s/version \"[^\"]*\"/version \"$VERSION_NUM\"/" "$EXTERNAL_TAP_FILE"
+    sed -i "s|/v[0-9.]*-[a-z0-9]*/|/v$VERSION_NUM/|g" "$EXTERNAL_TAP_FILE"
+    sed -i "s|/v[0-9.]*/|/v$VERSION_NUM/|g" "$EXTERNAL_TAP_FILE"
+
+    if [ -n "${CHECKSUMS[darwin-aarch64]:-}" ]; then
+        sed -i "s/PLACEHOLDER_SHA256_DARWIN_ARM64/${CHECKSUMS[darwin-aarch64]}/" "$EXTERNAL_TAP_FILE"
+    fi
+    if [ -n "${CHECKSUMS[darwin-x86_64]:-}" ]; then
+        sed -i "s/PLACEHOLDER_SHA256_DARWIN_X64/${CHECKSUMS[darwin-x86_64]}/" "$EXTERNAL_TAP_FILE"
+    fi
+    if [ -n "${CHECKSUMS[linux-aarch64]:-}" ]; then
+        sed -i "s/PLACEHOLDER_SHA256_LINUX_ARM64/${CHECKSUMS[linux-aarch64]}/" "$EXTERNAL_TAP_FILE"
+    fi
+    if [ -n "${CHECKSUMS[linux-x86_64]:-}" ]; then
+        sed -i "s/PLACEHOLDER_SHA256_LINUX_X64/${CHECKSUMS[linux-x86_64]}/" "$EXTERNAL_TAP_FILE"
+    fi
+
+    echo "  Updated $EXTERNAL_TAP_FILE"
 fi
 
 echo ""

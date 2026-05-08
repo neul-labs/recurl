@@ -11,9 +11,13 @@ pub fn get_socket_path() -> PathBuf {
         // Windows named pipe
         PathBuf::from(format!(r"\\.\pipe\recurl-{}", whoami()))
     } else {
-        // Unix socket
-        let uid = unsafe { libc::getuid() };
-        PathBuf::from(format!("/tmp/recurl.{}.sock", uid))
+        // Unix socket – placed under the user's cache dir to avoid
+        // symlink TOCTOU attacks in world-writable /tmp.
+        let cache_dir = dirs::cache_dir().unwrap_or_else(|| PathBuf::from("/tmp"));
+        let socket_dir = cache_dir.join("recurl");
+        // Ensure the directory exists with restricted permissions
+        let _ = std::fs::create_dir_all(&socket_dir);
+        socket_dir.join("daemon.sock")
     }
 }
 
@@ -22,11 +26,6 @@ fn whoami() -> String {
     std::env::var("USER")
         .or_else(|_| std::env::var("USERNAME"))
         .unwrap_or_else(|_| "unknown".to_string())
-}
-
-/// Check if the daemon socket exists
-pub fn socket_exists() -> bool {
-    get_socket_path().exists()
 }
 
 /// Remove the socket file (for cleanup)
@@ -55,6 +54,11 @@ pub mod unix {
         /// Create and bind the server socket
         pub async fn bind() -> io::Result<Self> {
             let path = get_socket_path();
+
+            // Ensure parent directory exists
+            if let Some(parent) = path.parent() {
+                std::fs::create_dir_all(parent)?;
+            }
 
             // Remove existing socket if present
             if path.exists() {
@@ -286,8 +290,17 @@ mod tests {
         if cfg!(windows) {
             assert!(path.to_string_lossy().contains(r"\\.\pipe\recurl-"));
         } else {
-            assert!(path.to_string_lossy().contains("/tmp/recurl."));
-            assert!(path.to_string_lossy().contains(".sock"));
+            // Should now be under the user's cache directory
+            assert!(
+                path.to_string_lossy().contains("recurl"),
+                "socket path should contain 'recurl' subdirectory: {:?}",
+                path
+            );
+            assert!(
+                path.file_name().unwrap() == "daemon.sock",
+                "socket file should be named daemon.sock: {:?}",
+                path
+            );
         }
     }
 }

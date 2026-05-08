@@ -2,14 +2,15 @@
 //!
 //! Maintains a pool of warm Chromium instances for fast JS preflight.
 
-use chromiumoxide::browser::{Browser, BrowserConfig};
+use chromiumoxide::browser::Browser;
 use futures::StreamExt;
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
-use tokio::sync::{Mutex, RwLock};
+use tokio::sync::{Mutex, RwLock, Semaphore};
 
+use super::browser_state::{BrowserState, BrowserStateTracker};
 use super::protocol::DaemonResponse;
 
 /// Configuration for the browser pool
@@ -78,9 +79,7 @@ impl PoolStats {
 /// A browser instance in the pool
 struct PooledBrowser {
     browser: Browser,
-    #[allow(dead_code)]
-    created_at: Instant,
-    last_used: Instant,
+    state_tracker: BrowserStateTracker,
 }
 
 /// Browser pool for JS preflight operations
@@ -90,6 +89,8 @@ pub struct BrowserPool {
     stats: Arc<PoolStats>,
     /// Cookie cache per domain
     cookie_cache: RwLock<HashMap<String, HashMap<String, String>>>,
+    /// Semaphore to limit concurrent browser creation
+    creation_semaphore: Semaphore,
 }
 
 impl BrowserPool {
@@ -100,6 +101,7 @@ impl BrowserPool {
             browsers: Mutex::new(Vec::new()),
             stats: Arc::new(PoolStats::new()),
             cookie_cache: RwLock::new(HashMap::new()),
+            creation_semaphore: Semaphore::new(2),
         }
     }
 
@@ -115,15 +117,13 @@ impl BrowserPool {
 
     /// Warm up the pool with initial browsers
     pub async fn warmup(&self) -> Result<(), String> {
-        let mut browsers = self.browsers.lock().await;
-
         for _ in 0..self.config.min_size {
             match self.create_browser().await {
                 Ok(browser) => {
+                    let mut browsers = self.browsers.lock().await;
                     browsers.push(PooledBrowser {
                         browser,
-                        created_at: Instant::now(),
-                        last_used: Instant::now(),
+                        state_tracker: BrowserStateTracker::new(),
                     });
                 }
                 Err(e) => {
@@ -145,7 +145,9 @@ impl BrowserPool {
     ) -> DaemonResponse {
         self.stats.increment_active();
 
-        let result = self.do_preflight(url, timeout_ms, wait_selector, return_html).await;
+        let result = self
+            .do_preflight(url, timeout_ms, wait_selector, return_html)
+            .await;
 
         self.stats.decrement_active();
         self.stats.increment_served();
@@ -161,7 +163,7 @@ impl BrowserPool {
         return_html: bool,
     ) -> DaemonResponse {
         // Try to get a browser from the pool
-        let browser = match self.acquire_browser().await {
+        let pooled = match self.acquire_browser().await {
             Ok(b) => b,
             Err(e) => {
                 return DaemonResponse::PreflightError {
@@ -173,10 +175,18 @@ impl BrowserPool {
         let timeout = Duration::from_millis(timeout_ms.unwrap_or(30000));
 
         // Execute preflight
-        let result = self.run_preflight(&browser, url, timeout, wait_selector, return_html).await;
+        let result = self
+            .run_preflight(&pooled.browser, url, timeout, wait_selector, return_html)
+            .await;
 
-        // Return browser to pool
-        self.release_browser(browser).await;
+        // Health check: can the browser still create pages?
+        let healthy = matches!(
+            tokio::time::timeout(Duration::from_secs(5), pooled.browser.new_page("about:blank")).await,
+            Ok(Ok(_))
+        );
+
+        // Return browser to pool or destroy if unhealthy
+        self.release_browser(pooled, healthy).await;
 
         result
     }
@@ -190,7 +200,12 @@ impl BrowserPool {
         return_html: bool,
     ) -> DaemonResponse {
         // Create new page
-        let page = match tokio::time::timeout(Duration::from_secs(10), browser.new_page(url)).await {
+        let page = match tokio::time::timeout(
+            Duration::from_secs(10),
+            browser.new_page("about:blank"),
+        )
+        .await
+        {
             Ok(Ok(page)) => page,
             Ok(Err(e)) => {
                 return DaemonResponse::PreflightError {
@@ -203,6 +218,21 @@ impl BrowserPool {
                 };
             }
         };
+
+        // Inject stealth patches before navigation
+        let stealth_js = crate::stealth::get_all_patches();
+        if let Err(e) = page.evaluate(stealth_js).await {
+            return DaemonResponse::PreflightError {
+                error: format!("Failed to inject stealth: {}", e),
+            };
+        }
+
+        // Navigate to target URL
+        if let Err(e) = page.goto(url).await {
+            return DaemonResponse::PreflightError {
+                error: format!("Failed to navigate: {}", e),
+            };
+        }
 
         // Wait for navigation
         if let Err(e) = tokio::time::timeout(timeout, page.wait_for_navigation()).await {
@@ -229,6 +259,16 @@ impl BrowserPool {
         } else {
             // Default wait for JS challenges
             tokio::time::sleep(Duration::from_secs(5)).await;
+
+            // Check for common challenge indicators and wait longer if needed
+            if let Ok(html) = page.content().await {
+                if html.contains("Just a moment")
+                    || html.contains("cf-browser-verification")
+                    || html.contains("challenge-platform")
+                {
+                    tokio::time::sleep(Duration::from_secs(5)).await;
+                }
+            }
         }
 
         // Get final URL
@@ -275,44 +315,64 @@ impl BrowserPool {
         }
     }
 
-    async fn acquire_browser(&self) -> Result<Browser, String> {
+    async fn acquire_browser(&self,
+    ) -> Result<PooledBrowser, String> {
         let mut browsers = self.browsers.lock().await;
 
-        // Try to get an existing browser
-        if let Some(pooled) = browsers.pop() {
-            return Ok(pooled.browser);
+        // Try to get an existing ready browser
+        if let Some(idx) = browsers.iter().position(|p| p.state_tracker.state() == BrowserState::Ready) {
+            let mut pooled = browsers.remove(idx);
+            pooled.state_tracker.mark_in_use();
+            return Ok(pooled);
         }
 
-        // Create a new one if pool is empty
-        drop(browsers); // Release lock before async operation
-        self.create_browser().await
+        // No ready browsers available; drop lock before creating
+        drop(browsers);
+        self.create_browser_with_tracker().await
     }
 
-    async fn release_browser(&self, browser: Browser) {
+    async fn release_browser(&self, mut pooled: PooledBrowser, healthy: bool) {
+        if !healthy {
+            pooled.state_tracker.mark_unhealthy();
+        }
+
+        if pooled.state_tracker.state().should_destroy() {
+            // Drop the browser without returning it to the pool
+            return;
+        }
+
         let mut browsers = self.browsers.lock().await;
+
+        // Check for expired browsers while we have the lock
+        browsers.retain(|b| !b.state_tracker.is_idle_expired(self.config.idle_timeout));
 
         // Only keep if under max size
         if browsers.len() < self.config.max_size {
-            browsers.push(PooledBrowser {
-                browser,
-                created_at: Instant::now(),
-                last_used: Instant::now(),
-            });
+            pooled.state_tracker.mark_ready_after_use();
+            browsers.push(pooled);
         }
         // Otherwise, browser is dropped
     }
 
+    async fn create_browser_with_tracker(&self,
+    ) -> Result<PooledBrowser, String> {
+        let browser = self.create_browser().await?;
+        let mut tracker = BrowserStateTracker::new();
+        tracker.mark_ready();
+        Ok(PooledBrowser {
+            browser,
+            state_tracker: tracker,
+        })
+    }
+
     async fn create_browser(&self) -> Result<Browser, String> {
-        let config = BrowserConfig::builder()
-            .disable_default_args()
-            .arg("--headless=new")
-            .arg("--disable-gpu")
-            .arg("--no-sandbox")
-            .arg("--disable-dev-shm-usage")
-            .arg("--disable-blink-features=AutomationControlled")
-            .arg("--window-size=1920,1080")
-            .arg("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-            .build()
+        let _permit = self
+            .creation_semaphore
+            .acquire()
+            .await
+            .map_err(|_| "Failed to acquire creation semaphore")?;
+
+        let config = crate::browser_config::build_pool_browser_config()
             .map_err(|e| format!("Failed to build browser config: {}", e))?;
 
         let (browser, mut handler) = Browser::launch(config)
@@ -334,12 +394,16 @@ impl BrowserPool {
     /// Clean up idle browsers
     pub async fn cleanup_idle(&self) {
         let mut browsers = self.browsers.lock().await;
-        let now = Instant::now();
 
-        browsers.retain(|b| {
-            let idle_time = now.duration_since(b.last_used);
-            idle_time < self.config.idle_timeout
-        });
+        // Mark expired browsers
+        for b in browsers.iter_mut() {
+            if b.state_tracker.is_idle_expired(self.config.idle_timeout) {
+                b.state_tracker.mark_expired();
+            }
+        }
+
+        // Remove expired/unhealthy browsers
+        browsers.retain(|b| !b.state_tracker.state().should_destroy());
 
         // Ensure minimum pool size
         let current = browsers.len();
@@ -351,8 +415,7 @@ impl BrowserPool {
                     let mut browsers = self.browsers.lock().await;
                     browsers.push(PooledBrowser {
                         browser,
-                        created_at: Instant::now(),
-                        last_used: Instant::now(),
+                        state_tracker: BrowserStateTracker::new(),
                     });
                 }
             }
@@ -360,7 +423,10 @@ impl BrowserPool {
     }
 
     /// Get cached cookies for a domain
-    pub async fn get_cached_cookies(&self, domain: &str) -> Option<HashMap<String, String>> {
+    pub async fn get_cached_cookies(
+        &self,
+        domain: &str,
+    ) -> Option<HashMap<String, String>> {
         let cache = self.cookie_cache.read().await;
         cache.get(domain).cloned()
     }

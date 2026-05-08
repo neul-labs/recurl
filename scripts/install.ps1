@@ -9,7 +9,7 @@ param(
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
 
-$GitHubRepo = "user/recurl"  # TODO: update with actual repo
+$GitHubRepo = "neul-labs/recurl"  # TODO: update with actual repo
 $BaseUrl = "https://github.com/$GitHubRepo/releases"
 
 function Write-Info { param($Message) Write-Host "[info] $Message" -ForegroundColor Blue }

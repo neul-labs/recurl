@@ -91,7 +91,7 @@ Same installation as Apple Silicon.
 
 ```powershell
 # Install via Scoop
-scoop bucket add recurl https://github.com/user/recurl
+scoop bucket add recurl https://github.com/neul-labs/recurl
 scoop install recurl
 
 # Or via script
@@ -154,10 +154,10 @@ Docker support is available for containerized usage:
 
 ```bash
 # Pull official image
-docker pull ghcr.io/user/recurl
+docker pull ghcr.io/neul-labs/recurl
 
 # Run request
-docker run --rm ghcr.io/user/recurl https://example.com
+docker run --rm ghcr.io/neul-labs/recurl https://example.com
 ```
 
 The Docker image includes:

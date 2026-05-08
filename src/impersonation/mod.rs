@@ -138,6 +138,7 @@ impl ImpersonationResult {
 pub fn execute_impersonation(
     profile: ImpersonationProfile,
     args: &[String],
+    stdin_data: Option<&[u8]>,
 ) -> ImpersonationResult {
     // Find the impersonation engine
     let engine_path = match find_engine(profile.engine_type()) {
@@ -146,7 +147,7 @@ pub fn execute_impersonation(
     };
 
     // Execute with captured output
-    match execute_with_engine(&engine_path, args) {
+    match execute_with_engine(&engine_path, args, stdin_data) {
         Ok(output) => ImpersonationResult::success(profile, output),
         Err(e) => ImpersonationResult::failed(profile, e.to_string()),
     }
@@ -157,10 +158,11 @@ pub fn execute_with_escalation(
     args: &[String],
     preferred_profile: Option<ImpersonationProfile>,
     debug: bool,
+    stdin_data: Option<&[u8]>,
 ) -> Option<ImpersonationResult> {
     // If a specific profile is requested, only try that one
     if let Some(profile) = preferred_profile {
-        let result = execute_impersonation(profile, args);
+        let result = execute_impersonation(profile, args, stdin_data);
         if debug {
             eprintln!(
                 "[recurl] impersonation: {} -> {}",
@@ -177,7 +179,7 @@ pub fn execute_with_escalation(
 
     // Otherwise, try profiles in escalation order
     for profile in ImpersonationProfile::escalation_order() {
-        let result = execute_impersonation(*profile, args);
+        let result = execute_impersonation(*profile, args, stdin_data);
 
         if debug {
             eprintln!(
@@ -201,13 +203,26 @@ pub fn execute_with_escalation(
 }
 
 /// Execute curl with a specific engine
-fn execute_with_engine(engine: &PathBuf, args: &[String]) -> io::Result<Output> {
-    Command::new(engine)
-        .args(args)
-        .stdin(Stdio::inherit())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::inherit())
-        .output()
+fn execute_with_engine(engine: &PathBuf, args: &[String], stdin_data: Option<&[u8]>) -> io::Result<Output> {
+    let mut cmd = Command::new(engine);
+    cmd.args(args);
+
+    if let Some(data) = stdin_data {
+        cmd.stdin(Stdio::piped());
+        cmd.stdout(Stdio::piped());
+        cmd.stderr(Stdio::inherit());
+        let mut child = cmd.spawn()?;
+        if let Some(mut stdin) = child.stdin.take() {
+            use std::io::Write;
+            stdin.write_all(data)?;
+        }
+        child.wait_with_output()
+    } else {
+        cmd.stdin(Stdio::inherit());
+        cmd.stdout(Stdio::piped());
+        cmd.stderr(Stdio::inherit());
+        cmd.output()
+    }
 }
 
 /// Check if any impersonation engine is available

@@ -6,7 +6,7 @@ set -euo pipefail
 
 VERSION="${RECURL_VERSION:-latest}"
 INSTALL_DIR="${RECURL_INSTALL_DIR:-}"
-GITHUB_REPO="user/recurl"  # TODO: update with actual repo
+GITHUB_REPO="neul-labs/recurl"
 BASE_URL="https://github.com/${GITHUB_REPO}/releases"
 
 # Colors

@@ -2,7 +2,7 @@
 # AUR package for recurl - drop-in curl replacement with anti-bot bypass
 
 pkgname=recurl
-pkgver=0.1.0
+pkgver=0.1.2
 pkgrel=1
 pkgdesc="Drop-in curl replacement with automatic anti-bot bypass"
 arch=('x86_64' 'aarch64')

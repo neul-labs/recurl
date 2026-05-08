@@ -6,13 +6,15 @@
 //! Chromium is automatically downloaded on first use and cached locally.
 
 mod browser;
+mod browser_config;
 mod chromium;
 mod cookies;
+mod preflight_state;
 mod stealth;
 
-pub use browser::BrowserConfig;
-pub use chromium::{ensure_chromium, is_chromium_available, get_chromium_cache_dir};
-pub use cookies::ExtractedCookies;
+pub use browser_config::{build_pool_browser_config, build_stealth_browser_config};
+pub use chromium::{ensure_chromium, get_chromium_cache_dir};
+pub use cookies::{Cookie, ExtractedCookies};
 pub use stealth::get_all_patches;
 
 use std::time::Duration;

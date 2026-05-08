@@ -23,7 +23,17 @@ recurl https://protected-site.com/api/data
 ## Installation
 
 ```bash
-# Cargo (recommended)
+# npm / npx
+npm install -g @neul-labs/recurl
+
+# PyPI
+pip install recurl-cli
+
+# Homebrew (macOS / Linux)
+brew tap neul-labs/tap
+brew install recurl
+
+# Cargo (Rust)
 cargo install recurl
 
 # From source
@@ -141,14 +151,32 @@ cargo build --release --features daemon
 
 ```
 src/
-  main.rs          # CLI entry point, argument parsing
-  engine.rs        # curl_engine execution layer
-  detection.rs     # Anti-bot pattern detection
-  impersonate.rs   # TLS fingerprint impersonation
-  js_preflight.rs  # Headless Chromium rendering
+  main.rs                    # CLI entry point, argument parsing
+  engine.rs                  # curl_engine execution layer
+  detection/                 # Anti-bot pattern detection
+    mod.rs
+    patterns.rs
+    status.rs
+  impersonation/             # TLS fingerprint impersonation
+    mod.rs
+  js_preflight/              # Headless Chromium rendering
+    mod.rs
+    browser.rs
+    browser_config.rs
+    chromium.rs
+    cookies.rs
+    preflight_state.rs
+    stealth.rs
+  escalation.rs              # EscalationEngine state machine
   daemon/
-    main.rs        # recurld daemon entry point
-    pool.rs        # Browser instance pooling
+    main.rs                  # recurld daemon entry point
+    lifecycle.rs             # DaemonLifecycle state machine
+    browser_state.rs         # BrowserState state machine
+    pool.rs                  # Browser instance pooling
+    ipc.rs                   # IPC transport
+  protocol.rs                # IPC message protocol
+  config.rs                  # Configuration & defaults
+  daemon_client.rs           # Daemon client interface
 ```
 
 ### Running Tests

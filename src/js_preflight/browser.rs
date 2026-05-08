@@ -1,6 +1,6 @@
 //! Browser automation for JS preflight
 
-use chromiumoxide::browser::{Browser, BrowserConfig as ChromeConfig};
+use chromiumoxide::browser::Browser;
 use futures::StreamExt;
 use std::time::Duration;
 use tokio::time::timeout;
@@ -47,48 +47,8 @@ pub async fn run_preflight(
     }
 
     // Build browser config with stealth settings
-    // Based on puppeteer-extra-plugin-stealth techniques
-    let browser_config = ChromeConfig::builder()
-        .chrome_executable(chrome_path)
-        .disable_default_args()
-        // Headless mode (new headless is less detectable)
-        .arg("--headless=new")
-        // Basic required args
-        .arg("--no-sandbox")
-        .arg("--disable-dev-shm-usage")
-        .arg("--disable-gpu")
-        // Window/viewport
-        .arg("--window-size=1920,1080")
-        .arg("--start-maximized")
-        // Stealth: Disable automation indicators
-        .arg("--disable-blink-features=AutomationControlled")
-        .arg("--disable-features=TranslateUI")
-        .arg("--disable-infobars")
-        .arg("--disable-background-networking")
-        .arg("--disable-backgrounding-occluded-windows")
-        .arg("--disable-breakpad")
-        .arg("--disable-component-update")
-        .arg("--disable-default-apps")
-        .arg("--disable-domain-reliability")
-        .arg("--disable-extensions")
-        .arg("--disable-hang-monitor")
-        .arg("--disable-ipc-flooding-protection")
-        .arg("--disable-popup-blocking")
-        .arg("--disable-prompt-on-repost")
-        .arg("--disable-renderer-backgrounding")
-        .arg("--disable-sync")
-        .arg("--enable-features=NetworkService,NetworkServiceInProcess")
-        .arg("--force-color-profile=srgb")
-        .arg("--metrics-recording-only")
-        .arg("--no-first-run")
-        .arg("--password-store=basic")
-        .arg("--use-mock-keychain")
-        // Stealth: Language and locale
-        .arg("--lang=en-US,en")
-        // Stealth: Realistic user agent (Chrome 120 on Windows)
-        .arg("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-        .build()
-        .map_err(|e| format!("Failed to build browser config: {}", e))?;
+    let browser_config =
+        super::browser_config::build_stealth_browser_config(Some(chrome_path))?;
 
     // Launch browser with timeout
     let launch_result = timeout(

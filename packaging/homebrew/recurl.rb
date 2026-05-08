@@ -1,31 +1,30 @@
 # Homebrew formula for recurl
-# Install with: brew install recurl/tap/recurl
-# Or tap first: brew tap recurl/tap && brew install recurl
+# Install with: brew tap neul-labs/tap && brew install recurl
 
 class Recurl < Formula
   desc "Drop-in curl replacement with automatic anti-bot bypass"
-  homepage "https://github.com/user/recurl"
-  version "0.1.0"
+  homepage "https://github.com/neul-labs/recurl"
+  version "0.1.2"
   license "MIT"
 
   on_macos do
     on_arm do
-      url "https://github.com/user/recurl/releases/download/v#{version}/recurl-darwin-aarch64.tar.gz"
+      url "https://github.com/neul-labs/recurl/releases/download/v#{version}/recurl-darwin-aarch64.tar.gz"
       sha256 "PLACEHOLDER_SHA256_DARWIN_ARM64"
     end
     on_intel do
-      url "https://github.com/user/recurl/releases/download/v#{version}/recurl-darwin-x86_64.tar.gz"
+      url "https://github.com/neul-labs/recurl/releases/download/v#{version}/recurl-darwin-x86_64.tar.gz"
       sha256 "PLACEHOLDER_SHA256_DARWIN_X64"
     end
   end
 
   on_linux do
     on_arm do
-      url "https://github.com/user/recurl/releases/download/v#{version}/recurl-linux-aarch64.tar.gz"
+      url "https://github.com/neul-labs/recurl/releases/download/v#{version}/recurl-linux-aarch64.tar.gz"
       sha256 "PLACEHOLDER_SHA256_LINUX_ARM64"
     end
     on_intel do
-      url "https://github.com/user/recurl/releases/download/v#{version}/recurl-linux-x86_64.tar.gz"
+      url "https://github.com/neul-labs/recurl/releases/download/v#{version}/recurl-linux-x86_64.tar.gz"
       sha256 "PLACEHOLDER_SHA256_LINUX_X64"
     end
   end

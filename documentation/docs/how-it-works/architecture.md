@@ -111,6 +111,117 @@ First JS request → Start daemon
 
 ---
 
+## State Machines
+
+recurl uses explicit state machines to model complex lifecycle and escalation flows, replacing ad-hoc `AtomicBool` flags and sequential async chains with clear, testable state transitions.
+
+### EscalationEngine (`src/escalation.rs`)
+
+Drives the smart-mode request escalation flow:
+
+```
+┌─────────┐    ┌─────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│  Start  │───▶│ AfterCurl   │───▶│ AfterImpersonation│───▶│ AfterJsPreflight│
+└─────────┘    └─────────────┘    └──────────────────┘    └─────────────────┘
+       │                │                      │                      │
+       │ success        │ bypassed             │ bypassed             │ exhausted
+       ▼                ▼                      ▼                      ▼
+   ┌───────┐      ┌───────┐          ┌───────┐              ┌───────┐
+   │ Done  │      │ Done  │          │ Done  │              │ Done  │
+   └───────┘      └───────┘          └───────┘              └───────┘
+```
+
+**States:**
+
+| State | Description |
+|-------|-------------|
+| `Start` | Nothing attempted yet. Execute base `curl_engine`. |
+| `AfterCurl` | Base curl completed. Check detection result; escalate to impersonation if blocked. |
+| `AfterImpersonation` | Impersonation completed. If still blocked, escalate to JS preflight. |
+| `AfterJsPreflight` | JS preflight completed. Replay with cookies; if still blocked, give up. |
+| `Done` | Terminal state. Return final exit code and response. |
+
+### DaemonLifecycle (`src/daemon/lifecycle.rs`)
+
+Manages the daemon's overall lifecycle, replacing `Mutex<Instant>` idle tracking:
+
+```
+┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────────┐
+│ Starting │───▶│ Running  │───▶│   Idle   │───▶│ ShuttingDown │
+└──────────┘    └──────────┘    └──────────┘    └──────────────┘
+```
+
+**States:**
+
+| State | Description |
+|-------|-------------|
+| `Starting` | Daemon is warming the browser pool. |
+| `Running` | Accepting connections; idle timeout is tracked. |
+| `Idle` | No activity for `idle_timeout` duration; eligible for auto-shutdown. |
+| `ShuttingDown` | Draining active requests before exit. |
+
+### BrowserState (`src/daemon/browser_state.rs`)
+
+Tracks each pooled browser instance so unhealthy browsers are destroyed instead of reused:
+
+```
+┌───────────┐    ┌────────┐    ┌────────┐
+│ Creating  │───▶│ Ready  │───▶│ InUse  │
+└───────────┘    └────────┘    └────────┘
+                      │              │
+                      ▼              ▼
+               ┌──────────┐   ┌──────────┐
+               │ Unhealthy │   │ Expired  │
+               └──────────┘   └──────────┘
+```
+
+**States:**
+
+| State | Description |
+|-------|-------------|
+| `Creating` | Browser process is launching. |
+| `Ready` | Available in the pool for checkout. |
+| `InUse` | Checked out for an active preflight. |
+| `Unhealthy` | Failed health check or preflight error → destroy. |
+| `Expired` | Idle timeout exceeded → recycle. |
+
+### PreflightStateMachine (`src/js_preflight/preflight_state.rs`)
+
+Models a single JS preflight operation, replacing the sequential async function chain:
+
+```
+┌──────────────┐    ┌─────────────────┐    ┌────────────┐
+│ Initializing │───▶│ InjectingStealth │───▶│ Navigating │
+└──────────────┘    └─────────────────┘    └────────────┘
+                                                    │
+            ┌─────────────────────────────────────────┘
+            ▼
+┌─────────────────────┐    ┌───────────────────┐    ┌──────────┐
+│ WaitingForChallenge  │───▶│ WaitingForSelector│───▶│ Extracting│
+└─────────────────────┘    └───────────────────┘    └──────────┘
+                                                            │
+                    ┌───────────────────────────────────────┘
+                    ▼
+            ┌───────────────┐
+            │    Complete   │
+            └───────────────┘
+```
+
+**States:**
+
+| State | Description |
+|-------|-------------|
+| `Initializing` | Browser launch and setup. |
+| `InjectingStealth` | Navigating to `about:blank` to inject stealth scripts. |
+| `Navigating` | Navigating to the target URL. |
+| `WaitingForChallenge` | Waiting for Cloudflare/DataDome challenge resolution. |
+| `WaitingForSelector` | Waiting for a user-specified CSS selector. |
+| `Extracting` | Extracting cookies and final URL. |
+| `Complete` | Preflight succeeded. |
+| `Failed` | Timeout, error, or unrecoverable failure. |
+
+---
+
 ## Execution Flow
 
 ### Smart Mode
@@ -239,15 +350,50 @@ Communication between recurl and recurld.
 ### Key Dependencies
 
 ```toml
-tokio = "1.x"          # Async runtime
-chromiumoxide = "0.8"   # Browser automation
-serde_json = "1.x"     # IPC protocol
-dirs = "5.x"           # Platform paths
+tokio = "1.x"              # Async runtime
+chromiumoxide = "0.8"     # Browser automation (CDP client)
+chromiumoxide_fetcher = "0.8"  # Chromium auto-download
+serde_json = "1.x"         # IPC protocol
+dirs = "5.x"               # Platform paths
+mimalloc = "0.1"           # Memory allocator
+which = "7.x"              # Binary discovery
 ```
 
 ---
 
 ## Directory Structure
+
+### Source Layout
+
+```
+src/
+  main.rs                    # CLI entry point, argument parsing
+  engine.rs                  # curl_engine execution layer
+  config.rs                  # Configuration & defaults
+  protocol.rs                # IPC message protocol
+  daemon_client.rs           # Daemon client interface
+  escalation.rs              # EscalationEngine state machine
+  detection/                 # Anti-bot pattern detection
+    mod.rs
+    patterns.rs
+    status.rs
+  impersonation/             # TLS fingerprint impersonation
+    mod.rs
+  js_preflight/              # Headless Chromium rendering
+    mod.rs
+    browser.rs
+    browser_config.rs
+    chromium.rs
+    cookies.rs
+    preflight_state.rs       # PreflightStateMachine
+    stealth.rs
+  daemon/
+    main.rs                  # recurld daemon entry point
+    lifecycle.rs             # DaemonLifecycle state machine
+    browser_state.rs         # BrowserState state machine
+    pool.rs                  # Browser instance pooling
+    ipc.rs                   # IPC transport
+```
 
 ### Installation Layout
 

@@ -16,7 +16,7 @@ With options:
 
 ```bash
 # Specific version
-RCURL_VERSION=v0.1.0 curl -fsSL https://recurl.dev/install.sh | bash
+RCURL_VERSION=v0.1.2 curl -fsSL https://recurl.dev/install.sh | bash
 
 # Custom install directory
 RCURL_INSTALL_DIR=/opt/recurl curl -fsSL https://recurl.dev/install.sh | bash
@@ -32,7 +32,7 @@ With options:
 
 ```powershell
 # Specific version
-$env:RCURL_VERSION = "v0.1.0"; irm https://recurl.dev/install.ps1 | iex
+$env:RCURL_VERSION = "v0.1.2"; irm https://recurl.dev/install.ps1 | iex
 ```
 
 ---
@@ -43,7 +43,7 @@ $env:RCURL_VERSION = "v0.1.0"; irm https://recurl.dev/install.ps1 | iex
 
 ```bash
 # Add the tap
-brew tap recurl/tap
+brew tap neul-labs/tap
 
 # Install
 brew install recurl
@@ -52,14 +52,34 @@ brew install recurl
 Or install directly:
 
 ```bash
-brew install recurl/tap/recurl
+brew install neul-labs/tap/recurl
+```
+
+### npm (Node.js)
+
+```bash
+# Global install
+npm install -g @neul-labs/recurl
+
+# Or run without installing
+npx @neul-labs/recurl https://example.com
+```
+
+### PyPI (Python)
+
+```bash
+# Install
+pip install recurl-cli
+
+# Run
+python -m recurl https://example.com
 ```
 
 ### Scoop (Windows)
 
 ```powershell
 # Add the bucket
-scoop bucket add recurl https://github.com/user/recurl
+scoop bucket add recurl https://github.com/neul-labs/recurl
 
 # Install
 scoop install recurl
@@ -83,10 +103,10 @@ paru -S recurl
 
 ```bash
 # Single request
-docker run --rm ghcr.io/user/recurl https://example.com
+docker run --rm ghcr.io/neul-labs/recurl https://example.com
 
 # Save output to local directory
-docker run --rm -v $(pwd)/output:/output ghcr.io/user/recurl \
+docker run --rm -v $(pwd)/output:/output ghcr.io/neul-labs/recurl \
     https://example.com -o /output/result.html
 ```
 
@@ -97,7 +117,7 @@ docker run --rm -v $(pwd)/output:/output ghcr.io/user/recurl \
 version: '3.8'
 services:
   recurl:
-    image: ghcr.io/user/recurl
+    image: ghcr.io/neul-labs/recurl
     volumes:
       - ./output:/output
 ```
@@ -112,7 +132,7 @@ docker-compose run --rm recurl https://example.com
 
 ### Download
 
-Download from [GitHub Releases](https://github.com/user/recurl/releases):
+Download from [GitHub Releases](https://github.com/neul-labs/recurl/releases):
 
 | Platform | Archive |
 |----------|---------|
@@ -199,7 +219,7 @@ source ~/.zshrc
     sudo apt-get install -y build-essential pkg-config libssl-dev
 
     # Clone and build
-    git clone https://github.com/user/recurl.git
+    git clone https://github.com/neul-labs/recurl.git
     cd recurl
     cargo build --release
 
@@ -214,7 +234,7 @@ source ~/.zshrc
     xcode-select --install
 
     # Clone and build
-    git clone https://github.com/user/recurl.git
+    git clone https://github.com/neul-labs/recurl.git
     cd recurl
     cargo build --release
     ```
@@ -223,7 +243,7 @@ source ~/.zshrc
 
     ```powershell
     # Requires Visual Studio Build Tools with C++ workload
-    git clone https://github.com/user/recurl.git
+    git clone https://github.com/neul-labs/recurl.git
     cd recurl
     cargo build --release
 

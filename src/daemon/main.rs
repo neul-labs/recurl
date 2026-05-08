@@ -5,13 +5,19 @@
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
+mod browser_state;
 mod ipc;
+mod lifecycle;
 mod pool;
+#[path = "../js_preflight/browser_config.rs"]
+mod browser_config;
+#[path = "../js_preflight/stealth.rs"]
+mod stealth;
+#[path = "../protocol.rs"]
 mod protocol;
 
+use lifecycle::{DaemonLifecycle, DaemonState};
 use pool::{BrowserPool, PoolConfig};
-use protocol::{DaemonRequest, DaemonResponse};
-use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -97,11 +103,20 @@ async fn run_daemon() {
     // Create browser pool
     let pool = Arc::new(BrowserPool::new(pool_config));
 
+    // Create lifecycle manager
+    let lifecycle = Arc::new(DaemonLifecycle::new(
+        Duration::from_millis(idle_timeout_ms),
+        100, // max concurrent requests
+    ));
+
     // Warm up pool
     eprintln!("[recurld] Warming up browser pool...");
     if let Err(e) = pool.warmup().await {
         eprintln!("[recurld] Warning: Failed to warm up pool: {}", e);
     }
+
+    lifecycle.mark_running().await;
+    eprintln!("[recurld] Daemon is running");
 
     // Bind server socket
     let server = match ipc::DaemonServer::bind().await {
@@ -114,15 +129,11 @@ async fn run_daemon() {
 
     eprintln!("[recurld] Listening on {:?}", server.path());
 
-    // Shutdown flag
-    let shutdown = Arc::new(AtomicBool::new(false));
-    let shutdown_clone = Arc::clone(&shutdown);
-
     // Setup signal handlers
-    #[cfg(unix)]
-    {
-        let shutdown_signal = Arc::clone(&shutdown);
-        tokio::spawn(async move {
+    let lifecycle_signal = Arc::clone(&lifecycle);
+    tokio::spawn(async move {
+        #[cfg(unix)]
+        {
             let mut sigterm = tokio::signal::unix::signal(
                 tokio::signal::unix::SignalKind::terminate()
             ).expect("Failed to setup SIGTERM handler");
@@ -139,26 +150,32 @@ async fn run_daemon() {
                     eprintln!("[recurld] Received SIGINT");
                 }
             }
+        }
 
-            shutdown_signal.store(true, Ordering::SeqCst);
-        });
-    }
+        #[cfg(not(unix))]
+        {
+            tokio::signal::ctrl_c()
+                .await
+                .expect("Failed to listen for ctrl-c");
+            eprintln!("[recurld] Received CTRL-C");
+        }
 
-    // Idle timeout tracking
-    let last_activity = Arc::new(std::sync::Mutex::new(std::time::Instant::now()));
-    let idle_timeout = Duration::from_millis(idle_timeout_ms);
+        lifecycle_signal.initiate_shutdown().await;
+    });
 
     // Spawn idle checker
-    let idle_shutdown = Arc::clone(&shutdown);
-    let idle_last = Arc::clone(&last_activity);
+    let lifecycle_idle = Arc::clone(&lifecycle);
     tokio::spawn(async move {
         loop {
             tokio::time::sleep(Duration::from_secs(10)).await;
 
-            let elapsed = idle_last.lock().unwrap().elapsed();
-            if elapsed > idle_timeout {
-                eprintln!("[recurld] Idle timeout, shutting down...");
-                idle_shutdown.store(true, Ordering::SeqCst);
+            if lifecycle_idle.is_idle_timeout().await {
+                eprintln!("[recurld] Idle timeout, initiating shutdown...");
+                lifecycle_idle.initiate_shutdown().await;
+                break;
+            }
+
+            if matches!(lifecycle_idle.current_state().await, DaemonState::ShuttingDown) {
                 break;
             }
         }
@@ -166,7 +183,7 @@ async fn run_daemon() {
 
     // Accept connections
     loop {
-        if shutdown_clone.load(Ordering::SeqCst) {
+        if lifecycle.is_shutting_down().await {
             break;
         }
 
@@ -174,7 +191,8 @@ async fn run_daemon() {
         let accept_result = tokio::time::timeout(
             Duration::from_secs(1),
             server.accept(),
-        ).await;
+        )
+        .await;
 
         let mut conn = match accept_result {
             Ok(Ok(conn)) => conn,
@@ -185,25 +203,36 @@ async fn run_daemon() {
             Err(_) => continue, // Timeout, check shutdown flag
         };
 
-        // Update activity time
-        *last_activity.lock().unwrap() = std::time::Instant::now();
-
         // Handle connection
         let pool_clone = Arc::clone(&pool);
-        let shutdown_check = Arc::clone(&shutdown_clone);
+        let lifecycle_clone = Arc::clone(&lifecycle);
 
         tokio::spawn(async move {
+            // Acquire a request permit to track active requests
+            let _permit = match lifecycle_clone.acquire_request_permit().await {
+                Ok(p) => p,
+                Err(_) => {
+                    eprintln!("[recurld] Failed to acquire request permit");
+                    return;
+                }
+            };
+
             loop {
                 match conn.read_request().await {
                     Ok(Some(request)) => {
-                        let response = handle_request(&pool_clone, request, &shutdown_check).await;
+                        let response =
+                            handle_request(&pool_clone, request, &lifecycle_clone).await;
+
+                        // Record activity after request is handled
+                        lifecycle_clone.record_activity().await;
+
                         if let Err(e) = conn.write_response(&response).await {
                             eprintln!("[recurld] Write error: {}", e);
                             break;
                         }
 
                         // Check if shutdown was requested
-                        if matches!(response, DaemonResponse::ShutdownAck) {
+                        if matches!(response, protocol::DaemonResponse::ShutdownAck) {
                             break;
                         }
                     }
@@ -214,10 +243,14 @@ async fn run_daemon() {
                     }
                 }
             }
+
+            // Record activity when connection closes
+            lifecycle_clone.record_activity().await;
         });
     }
 
-    eprintln!("[recurld] Shutting down...");
+    eprintln!("[recurld] Shutting down, draining active requests...");
+    lifecycle.drain_active_requests().await;
 
     // Cleanup socket
     let _ = ipc::remove_socket();
@@ -227,45 +260,53 @@ async fn run_daemon() {
 
 async fn handle_request(
     pool: &BrowserPool,
-    request: DaemonRequest,
-    shutdown: &AtomicBool,
-) -> DaemonResponse {
+    request: protocol::DaemonRequest,
+    lifecycle: &DaemonLifecycle,
+) -> protocol::DaemonResponse {
     match request {
-        DaemonRequest::JsPreflight {
+        protocol::DaemonRequest::JsPreflight {
             url,
             timeout_ms,
             wait_selector,
             return_html,
         } => {
-            pool.execute_preflight(&url, timeout_ms, wait_selector, return_html)
-                .await
+            pool.execute_preflight(&url,
+                timeout_ms,
+                wait_selector,
+                return_html,
+            )
+            .await
         }
 
-        DaemonRequest::Status => {
+        protocol::DaemonRequest::Status => {
             let stats = pool.stats();
-            DaemonResponse::Status {
+            protocol::DaemonResponse::Status {
                 version: env!("CARGO_PKG_VERSION").to_string(),
-                uptime_secs: stats.uptime_secs(),
+                uptime_secs: lifecycle.uptime_secs(),
                 pool_size: pool.size().await,
-                requests_served: stats.requests_served.load(std::sync::atomic::Ordering::Relaxed),
-                active_requests: stats.active_requests.load(std::sync::atomic::Ordering::Relaxed),
+                requests_served: stats
+                    .requests_served
+                    .load(std::sync::atomic::Ordering::Relaxed),
+                active_requests: stats
+                    .active_requests
+                    .load(std::sync::atomic::Ordering::Relaxed),
             }
         }
 
-        DaemonRequest::Shutdown => {
-            shutdown.store(true, std::sync::atomic::Ordering::SeqCst);
-            DaemonResponse::ShutdownAck
+        protocol::DaemonRequest::Shutdown => {
+            lifecycle.initiate_shutdown().await;
+            protocol::DaemonResponse::ShutdownAck
         }
 
-        DaemonRequest::Ping => DaemonResponse::Pong,
+        protocol::DaemonRequest::Ping => protocol::DaemonResponse::Pong,
     }
 }
 
 async fn query_status() {
     match ipc::DaemonClient::connect().await {
         Ok(mut client) => {
-            match client.request(&DaemonRequest::Status).await {
-                Ok(DaemonResponse::Status {
+            match client.request(&protocol::DaemonRequest::Status).await {
+                Ok(protocol::DaemonResponse::Status {
                     version,
                     uptime_secs,
                     pool_size,
@@ -299,8 +340,8 @@ async fn query_status() {
 async fn stop_daemon() {
     match ipc::DaemonClient::connect().await {
         Ok(mut client) => {
-            match client.request(&DaemonRequest::Shutdown).await {
-                Ok(DaemonResponse::ShutdownAck) => {
+            match client.request(&protocol::DaemonRequest::Shutdown).await {
+                Ok(protocol::DaemonResponse::ShutdownAck) => {
                     println!("Daemon shutdown initiated");
                 }
                 Ok(resp) => {

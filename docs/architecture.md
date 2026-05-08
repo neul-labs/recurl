@@ -88,16 +88,27 @@ Generic patterns:
 - `<noscript>` heavy pages with minimal content
 - Meta refresh to challenge URLs
 
+## State machines
+
+recurl models complex flows with explicit state machines for testability and clarity.
+
+| State Machine | File | Purpose |
+|---------------|------|---------|
+| `EscalationEngine` | `src/escalation.rs` | Drives curl → impersonation → JS preflight → replay |
+| `DaemonLifecycle` | `src/daemon/lifecycle.rs` | Daemon startup → running → idle → shutdown |
+| `BrowserState` | `src/daemon/browser_state.rs` | Per-browser creating → ready → in-use → unhealthy |
+| `PreflightStateMachine` | `src/js_preflight/preflight_state.rs` | JS preflight initializing → navigating → extracting |
+
 ## Tech stack
 
 | Component | Technology |
 |-----------|------------|
 | recurl shim | Rust |
-| recurld daemon | Rust |
+| recurld daemon | Rust (tokio async) |
 | curl_engine | Bundled upstream curl binary |
 | Impersonation | curl-impersonate (pre-built binaries) |
-| JS preflight | Chromium via chromiumoxide/headless_chrome |
-| IPC | nng (via nng-rs) |
+| JS preflight | chromiumoxide (Rust CDP client) |
+| IPC | Unix socket / named pipe with JSON |
 
 ### Why Rust
 
@@ -110,10 +121,10 @@ Generic patterns:
 ### Key crates
 
 - `tokio` - async runtime
-- `clap` - CLI parsing
-- `nng` - daemon IPC
-- `chromiumoxide` or `headless_chrome` - browser automation
-- `regex` - pattern matching for failure detection
+- `chromiumoxide` / `chromiumoxide_fetcher` - browser automation and auto-download
+- `serde_json` - IPC protocol
+- `dirs` - platform paths
+- `mimalloc` - memory allocator
 
 ## Observability
 

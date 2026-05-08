@@ -27,7 +27,7 @@ Get recurl running in under 2 minutes.
 === "Docker"
 
     ```bash
-    docker run --rm ghcr.io/user/recurl https://example.com
+    docker run --rm ghcr.io/neul-labs/recurl https://example.com
     ```
 
 ---

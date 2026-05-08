@@ -124,6 +124,7 @@ pub fn get_all_patches() -> String {
         PATCH_PERMISSIONS,
         PATCH_WEBGL,
         PATCH_CONSOLE,
+        PATCH_BROKEN_IMAGE,
     ]
     .join("\n")
 }
