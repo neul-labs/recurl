@@ -85,10 +85,7 @@ impl ImpersonationResult {
             profile,
             available: false,
             output: None,
-            error: Some(format!(
-                "{} impersonation engine not found",
-                profile.name()
-            )),
+            error: Some(format!("{} impersonation engine not found", profile.name())),
         }
     }
 
@@ -122,7 +119,10 @@ impl ImpersonationResult {
 
     /// Get stdout bytes
     pub fn stdout(&self) -> &[u8] {
-        self.output.as_ref().map(|o| o.stdout.as_slice()).unwrap_or(&[])
+        self.output
+            .as_ref()
+            .map(|o| o.stdout.as_slice())
+            .unwrap_or(&[])
     }
 
     /// Get exit code
@@ -168,7 +168,11 @@ pub fn execute_with_escalation(
                 "[recurl] impersonation: {} -> {}",
                 profile.name(),
                 if result.available {
-                    if result.is_success() { "success" } else { "failed" }
+                    if result.is_success() {
+                        "success"
+                    } else {
+                        "failed"
+                    }
                 } else {
                     "unavailable"
                 }
@@ -186,7 +190,11 @@ pub fn execute_with_escalation(
                 "[recurl] impersonation: {} -> {}",
                 profile.name(),
                 if result.available {
-                    if result.is_success() { "success" } else { "failed" }
+                    if result.is_success() {
+                        "success"
+                    } else {
+                        "failed"
+                    }
                 } else {
                     "unavailable"
                 }
@@ -203,7 +211,11 @@ pub fn execute_with_escalation(
 }
 
 /// Execute curl with a specific engine
-fn execute_with_engine(engine: &PathBuf, args: &[String], stdin_data: Option<&[u8]>) -> io::Result<Output> {
+fn execute_with_engine(
+    engine: &PathBuf,
+    args: &[String],
+    stdin_data: Option<&[u8]>,
+) -> io::Result<Output> {
     let mut cmd = Command::new(engine);
     cmd.args(args);
 
@@ -238,7 +250,10 @@ mod tests {
 
     #[test]
     fn test_profile_default() {
-        assert_eq!(ImpersonationProfile::default(), ImpersonationProfile::Chrome);
+        assert_eq!(
+            ImpersonationProfile::default(),
+            ImpersonationProfile::Chrome
+        );
     }
 
     #[test]

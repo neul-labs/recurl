@@ -47,17 +47,13 @@ pub async fn run_preflight(
     }
 
     // Build browser config with stealth settings
-    let browser_config =
-        super::browser_config::build_stealth_browser_config(Some(chrome_path))?;
+    let browser_config = super::browser_config::build_stealth_browser_config(Some(chrome_path))?;
 
     // Launch browser with timeout
-    let launch_result = timeout(
-        Duration::from_secs(30),
-        Browser::launch(browser_config),
-    )
-    .await
-    .map_err(|_| "Browser launch timeout")?
-    .map_err(|e| format!("Failed to launch browser: {}", e))?;
+    let launch_result = timeout(Duration::from_secs(30), Browser::launch(browser_config))
+        .await
+        .map_err(|_| "Browser launch timeout")?
+        .map_err(|e| format!("Failed to launch browser: {}", e))?;
 
     let (browser, mut handler) = launch_result;
 
@@ -86,13 +82,10 @@ async fn run_preflight_inner(
     options: &PreflightOptions,
 ) -> Result<PreflightResult, Box<dyn std::error::Error + Send + Sync>> {
     // Create new page (navigate to about:blank first to inject stealth)
-    let page = timeout(
-        Duration::from_secs(10),
-        browser.new_page("about:blank"),
-    )
-    .await
-    .map_err(|_| "Page creation timeout")?
-    .map_err(|e| format!("Failed to create page: {}", e))?;
+    let page = timeout(Duration::from_secs(10), browser.new_page("about:blank"))
+        .await
+        .map_err(|_| "Page creation timeout")?
+        .map_err(|e| format!("Failed to create page: {}", e))?;
 
     // Inject stealth patches before navigation
     if options.debug {
@@ -122,13 +115,10 @@ async fn run_preflight_inner(
         if options.debug {
             eprintln!("[recurl] JS preflight: waiting for selector '{}'", selector);
         }
-        timeout(
-            wait_duration,
-            page.find_element(selector),
-        )
-        .await
-        .map_err(|_| format!("Timeout waiting for selector: {}", selector))?
-        .map_err(|e| format!("Failed to find selector '{}': {}", selector, e))?;
+        timeout(wait_duration, page.find_element(selector))
+            .await
+            .map_err(|_| format!("Timeout waiting for selector: {}", selector))?
+            .map_err(|e| format!("Failed to find selector '{}': {}", selector, e))?;
     } else {
         // Default: wait a bit for JS challenges to resolve
         // Cloudflare typically takes 2-5 seconds
@@ -171,7 +161,11 @@ async fn run_preflight_inner(
     };
 
     if let Some(ref html) = rendered_html {
-        Ok(PreflightResult::success_with_html(cookies, final_url, html.clone()))
+        Ok(PreflightResult::success_with_html(
+            cookies,
+            final_url,
+            html.clone(),
+        ))
     } else {
         Ok(PreflightResult::success(cookies, final_url))
     }
@@ -201,7 +195,6 @@ async fn extract_cookies(
 
     Ok(extracted)
 }
-
 
 #[cfg(test)]
 mod tests {

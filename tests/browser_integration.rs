@@ -72,9 +72,7 @@ fn test_browser_launch() {
             .await
             .expect("Failed to launch browser");
 
-        tokio::spawn(async move {
-            while handler.next().await.is_some() {}
-        });
+        tokio::spawn(async move { while handler.next().await.is_some() {} });
 
         // Create a page
         let page = browser
@@ -113,9 +111,7 @@ fn test_browser_navigation() {
             .await
             .expect("Failed to launch browser");
 
-        tokio::spawn(async move {
-            while handler.next().await.is_some() {}
-        });
+        tokio::spawn(async move { while handler.next().await.is_some() {} });
 
         // Navigate to httpbin
         let page = browser
@@ -160,9 +156,7 @@ fn test_cookie_extraction() {
             .await
             .expect("Failed to launch browser");
 
-        tokio::spawn(async move {
-            while handler.next().await.is_some() {}
-        });
+        tokio::spawn(async move { while handler.next().await.is_some() {} });
 
         // Navigate to a page that sets cookies
         let page = browser

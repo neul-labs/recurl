@@ -188,9 +188,10 @@ mod tests {
 
     #[test]
     fn test_to_curl_args() {
-        let cookies = ExtractedCookies::from_cookies(vec![
-            Cookie::new("session".to_string(), "xyz".to_string()),
-        ]);
+        let cookies = ExtractedCookies::from_cookies(vec![Cookie::new(
+            "session".to_string(),
+            "xyz".to_string(),
+        )]);
         let args = cookies.to_curl_args();
         assert_eq!(args.len(), 2);
         assert_eq!(args[0], "-b");

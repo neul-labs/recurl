@@ -108,11 +108,17 @@ impl RecurlConfig {
     fn from_env() -> Self {
         let mut config = Self::default();
 
-        if env::var("RECURL_STRICT").map(|v| v == "1" || v.to_lowercase() == "true").unwrap_or(false) {
+        if env::var("RECURL_STRICT")
+            .map(|v| v == "1" || v.to_lowercase() == "true")
+            .unwrap_or(false)
+        {
             config.strict = true;
         }
 
-        if env::var("RECURL_DEBUG").map(|v| v == "1" || v.to_lowercase() == "true").unwrap_or(false) {
+        if env::var("RECURL_DEBUG")
+            .map(|v| v == "1" || v.to_lowercase() == "true")
+            .unwrap_or(false)
+        {
             config.debug = true;
         }
 
@@ -126,10 +132,7 @@ mod tests {
 
     #[test]
     fn test_parse_no_recurl_flags() {
-        let args: Vec<String> = vec![
-            "-X".into(), "GET".into(),
-            "https://example.com".into(),
-        ];
+        let args: Vec<String> = vec!["-X".into(), "GET".into(), "https://example.com".into()];
         let (config, curl_args) = RecurlConfig::parse(&args);
 
         assert!(!config.strict);
@@ -139,10 +142,7 @@ mod tests {
 
     #[test]
     fn test_parse_strict_flag() {
-        let args: Vec<String> = vec![
-            "--recurl-strict".into(),
-            "https://example.com".into(),
-        ];
+        let args: Vec<String> = vec!["--recurl-strict".into(), "https://example.com".into()];
         let (config, curl_args) = RecurlConfig::parse(&args);
 
         assert!(config.strict);
@@ -159,7 +159,10 @@ mod tests {
         let (config, curl_args) = RecurlConfig::parse(&args);
 
         assert!(config.debug);
-        assert_eq!(curl_args, vec!["-v".to_string(), "https://example.com".to_string()]);
+        assert_eq!(
+            curl_args,
+            vec!["-v".to_string(), "https://example.com".to_string()]
+        );
     }
 
     #[test]
@@ -178,9 +181,11 @@ mod tests {
     #[test]
     fn test_parse_mixed_flags() {
         let args: Vec<String> = vec![
-            "-X".into(), "POST".into(),
+            "-X".into(),
+            "POST".into(),
             "--recurl-debug".into(),
-            "-d".into(), "data".into(),
+            "-d".into(),
+            "data".into(),
             "--recurl-strict".into(),
             "https://example.com".into(),
         ];
@@ -188,11 +193,16 @@ mod tests {
 
         assert!(config.strict);
         assert!(config.debug);
-        assert_eq!(curl_args, vec![
-            "-X".to_string(), "POST".to_string(),
-            "-d".to_string(), "data".to_string(),
-            "https://example.com".to_string(),
-        ]);
+        assert_eq!(
+            curl_args,
+            vec![
+                "-X".to_string(),
+                "POST".to_string(),
+                "-d".to_string(),
+                "data".to_string(),
+                "https://example.com".to_string(),
+            ]
+        );
     }
 
     #[test]

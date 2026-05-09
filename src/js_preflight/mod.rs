@@ -115,10 +115,7 @@ impl PreflightOptions {
 /// This launches a headless browser, navigates to the URL,
 /// waits for any JavaScript challenges to resolve, and extracts
 /// cookies for replay with curl.
-pub async fn execute_preflight(
-    url: &str,
-    options: &PreflightOptions,
-) -> PreflightResult {
+pub async fn execute_preflight(url: &str, options: &PreflightOptions) -> PreflightResult {
     if options.debug {
         eprintln!("[recurl] JS preflight: starting for {}", url);
     }
@@ -128,7 +125,10 @@ pub async fn execute_preflight(
         Ok(result) => {
             if options.debug {
                 eprintln!("[recurl] JS preflight: success");
-                eprintln!("[recurl] JS preflight: extracted {} cookies", result.cookies.count());
+                eprintln!(
+                    "[recurl] JS preflight: extracted {} cookies",
+                    result.cookies.count()
+                );
                 eprintln!("[recurl] JS preflight: final URL = {}", result.final_url);
             }
             result
@@ -143,10 +143,7 @@ pub async fn execute_preflight(
 }
 
 /// Execute preflight synchronously (for use in main.rs)
-pub fn execute_preflight_sync(
-    url: &str,
-    options: &PreflightOptions,
-) -> PreflightResult {
+pub fn execute_preflight_sync(url: &str, options: &PreflightOptions) -> PreflightResult {
     // Create a new tokio runtime for the async operation
     match tokio::runtime::Runtime::new() {
         Ok(rt) => rt.block_on(execute_preflight(url, options)),
@@ -168,12 +165,8 @@ mod tests {
 
     #[test]
     fn test_preflight_options_from_config() {
-        let opts = PreflightOptions::from_config(
-            Some(5000),
-            Some(".content".to_string()),
-            true,
-            false,
-        );
+        let opts =
+            PreflightOptions::from_config(Some(5000), Some(".content".to_string()), true, false);
         assert_eq!(opts.timeout, Duration::from_millis(5000));
         assert_eq!(opts.wait_selector, Some(".content".to_string()));
         assert!(opts.return_html);

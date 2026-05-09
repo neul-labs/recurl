@@ -5,16 +5,16 @@
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
+#[path = "../js_preflight/browser_config.rs"]
+mod browser_config;
 mod browser_state;
 mod ipc;
 mod lifecycle;
 mod pool;
-#[path = "../js_preflight/browser_config.rs"]
-mod browser_config;
-#[path = "../js_preflight/stealth.rs"]
-mod stealth;
 #[path = "../protocol.rs"]
 mod protocol;
+#[path = "../js_preflight/stealth.rs"]
+mod stealth;
 
 use lifecycle::{DaemonLifecycle, DaemonState};
 use pool::{BrowserPool, PoolConfig};
@@ -134,13 +134,13 @@ async fn run_daemon() {
     tokio::spawn(async move {
         #[cfg(unix)]
         {
-            let mut sigterm = tokio::signal::unix::signal(
-                tokio::signal::unix::SignalKind::terminate()
-            ).expect("Failed to setup SIGTERM handler");
+            let mut sigterm =
+                tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
+                    .expect("Failed to setup SIGTERM handler");
 
-            let mut sigint = tokio::signal::unix::signal(
-                tokio::signal::unix::SignalKind::interrupt()
-            ).expect("Failed to setup SIGINT handler");
+            let mut sigint =
+                tokio::signal::unix::signal(tokio::signal::unix::SignalKind::interrupt())
+                    .expect("Failed to setup SIGINT handler");
 
             tokio::select! {
                 _ = sigterm.recv() => {
@@ -175,7 +175,10 @@ async fn run_daemon() {
                 break;
             }
 
-            if matches!(lifecycle_idle.current_state().await, DaemonState::ShuttingDown) {
+            if matches!(
+                lifecycle_idle.current_state().await,
+                DaemonState::ShuttingDown
+            ) {
                 break;
             }
         }
@@ -188,11 +191,7 @@ async fn run_daemon() {
         }
 
         // Accept with timeout so we can check shutdown flag
-        let accept_result = tokio::time::timeout(
-            Duration::from_secs(1),
-            server.accept(),
-        )
-        .await;
+        let accept_result = tokio::time::timeout(Duration::from_secs(1), server.accept()).await;
 
         let mut conn = match accept_result {
             Ok(Ok(conn)) => conn,
@@ -220,8 +219,7 @@ async fn run_daemon() {
             loop {
                 match conn.read_request().await {
                     Ok(Some(request)) => {
-                        let response =
-                            handle_request(&pool_clone, request, &lifecycle_clone).await;
+                        let response = handle_request(&pool_clone, request, &lifecycle_clone).await;
 
                         // Record activity after request is handled
                         lifecycle_clone.record_activity().await;
@@ -270,12 +268,8 @@ async fn handle_request(
             wait_selector,
             return_html,
         } => {
-            pool.execute_preflight(&url,
-                timeout_ms,
-                wait_selector,
-                return_html,
-            )
-            .await
+            pool.execute_preflight(&url, timeout_ms, wait_selector, return_html)
+                .await
         }
 
         protocol::DaemonRequest::Status => {
@@ -304,32 +298,30 @@ async fn handle_request(
 
 async fn query_status() {
     match ipc::DaemonClient::connect().await {
-        Ok(mut client) => {
-            match client.request(&protocol::DaemonRequest::Status).await {
-                Ok(protocol::DaemonResponse::Status {
-                    version,
-                    uptime_secs,
-                    pool_size,
-                    requests_served,
-                    active_requests,
-                }) => {
-                    println!("recurld status:");
-                    println!("  Version: {}", version);
-                    println!("  Uptime: {}s", uptime_secs);
-                    println!("  Pool size: {} browsers", pool_size);
-                    println!("  Requests served: {}", requests_served);
-                    println!("  Active requests: {}", active_requests);
-                }
-                Ok(resp) => {
-                    eprintln!("Unexpected response: {:?}", resp);
-                    std::process::exit(1);
-                }
-                Err(e) => {
-                    eprintln!("Failed to get status: {}", e);
-                    std::process::exit(1);
-                }
+        Ok(mut client) => match client.request(&protocol::DaemonRequest::Status).await {
+            Ok(protocol::DaemonResponse::Status {
+                version,
+                uptime_secs,
+                pool_size,
+                requests_served,
+                active_requests,
+            }) => {
+                println!("recurld status:");
+                println!("  Version: {}", version);
+                println!("  Uptime: {}s", uptime_secs);
+                println!("  Pool size: {} browsers", pool_size);
+                println!("  Requests served: {}", requests_served);
+                println!("  Active requests: {}", active_requests);
             }
-        }
+            Ok(resp) => {
+                eprintln!("Unexpected response: {:?}", resp);
+                std::process::exit(1);
+            }
+            Err(e) => {
+                eprintln!("Failed to get status: {}", e);
+                std::process::exit(1);
+            }
+        },
         Err(_) => {
             eprintln!("Daemon is not running");
             std::process::exit(1);
@@ -339,21 +331,19 @@ async fn query_status() {
 
 async fn stop_daemon() {
     match ipc::DaemonClient::connect().await {
-        Ok(mut client) => {
-            match client.request(&protocol::DaemonRequest::Shutdown).await {
-                Ok(protocol::DaemonResponse::ShutdownAck) => {
-                    println!("Daemon shutdown initiated");
-                }
-                Ok(resp) => {
-                    eprintln!("Unexpected response: {:?}", resp);
-                    std::process::exit(1);
-                }
-                Err(e) => {
-                    eprintln!("Failed to stop daemon: {}", e);
-                    std::process::exit(1);
-                }
+        Ok(mut client) => match client.request(&protocol::DaemonRequest::Shutdown).await {
+            Ok(protocol::DaemonResponse::ShutdownAck) => {
+                println!("Daemon shutdown initiated");
             }
-        }
+            Ok(resp) => {
+                eprintln!("Unexpected response: {:?}", resp);
+                std::process::exit(1);
+            }
+            Err(e) => {
+                eprintln!("Failed to stop daemon: {}", e);
+                std::process::exit(1);
+            }
+        },
         Err(_) => {
             eprintln!("Daemon is not running");
             std::process::exit(1);

@@ -127,13 +127,17 @@ impl DaemonLifecycle {
     }
 
     /// Get a permit for handling a request (acquires a semaphore permit)
-    pub async fn acquire_request_permit(&self) -> Result<tokio::sync::SemaphorePermit<'_>, tokio::sync::AcquireError> {
+    pub async fn acquire_request_permit(
+        &self,
+    ) -> Result<tokio::sync::SemaphorePermit<'_>, tokio::sync::AcquireError> {
         self.active_requests.acquire().await
     }
 
     /// Get number of active requests (approximate, for stats)
     pub fn active_request_count(&self) -> usize {
-        self.active_requests.available_permits().saturating_sub(self.active_requests.available_permits())
+        self.active_requests
+            .available_permits()
+            .saturating_sub(self.active_requests.available_permits())
     }
 }
 

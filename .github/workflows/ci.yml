@@ -44,7 +44,7 @@ jobs:
         run: cargo build --release --bin recurld --features daemon
 
       - name: Run unit tests
-        run: cargo test
+        run: cargo test --bin recurl --bin recurld
 
       - name: Run conformance tests (Unix)
         if: runner.os != 'Windows'

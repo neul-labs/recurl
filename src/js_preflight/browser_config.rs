@@ -74,7 +74,8 @@ pub fn build_stealth_browser_config(
 /// This is identical to `build_stealth_browser_config(None)` but lives here
 /// so the daemon pool does not depend on the auto-download logic in
 /// `js_preflight::chromium`.
-pub fn build_pool_browser_config() -> Result<ChromeConfig, Box<dyn std::error::Error + Send + Sync>> {
+pub fn build_pool_browser_config() -> Result<ChromeConfig, Box<dyn std::error::Error + Send + Sync>>
+{
     build_stealth_browser_config(None)
 }
 

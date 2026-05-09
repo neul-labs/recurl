@@ -8,7 +8,9 @@ use crate::daemon_client::{daemon_preflight_sync, is_daemon_running, start_daemo
 use crate::detection::DetectionResult;
 // find_curl_engine not used directly in this module
 use crate::impersonation::{execute_with_escalation, ImpersonationProfile};
-use crate::js_preflight::{execute_preflight_sync, PreflightOptions, PreflightResult, Cookie, ExtractedCookies};
+use crate::js_preflight::{
+    execute_preflight_sync, Cookie, ExtractedCookies, PreflightOptions, PreflightResult,
+};
 use crate::protocol::DaemonResponse;
 use std::io::{self, Read, Write};
 use std::path::PathBuf;
@@ -32,10 +34,7 @@ pub enum EscalationState {
         status: Option<u16>,
     },
     /// JS preflight has been attempted
-    AfterJsPreflight {
-        stdout: Vec<u8>,
-        exit_code: u8,
-    },
+    AfterJsPreflight { stdout: Vec<u8>, exit_code: u8 },
     /// Terminal state: escalation is complete
     Done(u8),
 }
@@ -59,7 +58,9 @@ impl<'a> EscalationEngine<'a> {
         stdin_data: Option<&'a [u8]>,
     ) -> Self {
         let mut enhanced_args = args.to_vec();
-        let has_write_out = args.iter().any(|a| a == "-w" || a.starts_with("--write-out"));
+        let has_write_out = args
+            .iter()
+            .any(|a| a == "-w" || a.starts_with("--write-out"));
         let status_marker = "\n__RECURL_STATUS__:%{http_code}".to_string();
 
         if !has_write_out {
@@ -85,12 +86,16 @@ impl<'a> EscalationEngine<'a> {
         loop {
             state = match state {
                 EscalationState::Start => self.step_start()?,
-                EscalationState::AfterCurl { stdout, exit_code, status } => {
-                    self.step_after_curl(stdout, exit_code, status)?
-                }
-                EscalationState::AfterImpersonation { stdout, exit_code, status } => {
-                    self.step_after_impersonation(stdout, exit_code, status)?
-                }
+                EscalationState::AfterCurl {
+                    stdout,
+                    exit_code,
+                    status,
+                } => self.step_after_curl(stdout, exit_code, status)?,
+                EscalationState::AfterImpersonation {
+                    stdout,
+                    exit_code,
+                    status,
+                } => self.step_after_impersonation(stdout, exit_code, status)?,
                 EscalationState::AfterJsPreflight { stdout, exit_code } => {
                     self.step_after_js_preflight(stdout, exit_code)?
                 }
@@ -157,9 +162,12 @@ impl<'a> EscalationEngine<'a> {
             eprintln!("[recurl] attempting impersonation escalation...");
         }
 
-        if let Some(imp_result) =
-            execute_with_escalation(&self.enhanced_args, preferred_profile, self.config.debug, self.stdin_data)
-        {
+        if let Some(imp_result) = execute_with_escalation(
+            &self.enhanced_args,
+            preferred_profile,
+            self.config.debug,
+            self.stdin_data,
+        ) {
             if imp_result.available {
                 let (imp_stdout, imp_status) = if !self.has_write_out {
                     extract_status_code(imp_result.stdout(), &self.status_marker)

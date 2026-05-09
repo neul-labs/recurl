@@ -81,7 +81,8 @@ pub enum DaemonResponse {
 impl DaemonRequest {
     /// Serialize request to JSON bytes with newline delimiter
     pub fn to_bytes(&self) -> Vec<u8> {
-        let mut bytes = serde_json::to_vec(self).expect("DaemonRequest serialization should never fail");
+        let mut bytes =
+            serde_json::to_vec(self).expect("DaemonRequest serialization should never fail");
         bytes.push(b'\n');
         bytes
     }
@@ -95,7 +96,8 @@ impl DaemonRequest {
 impl DaemonResponse {
     /// Serialize response to JSON bytes with newline delimiter
     pub fn to_bytes(&self) -> Vec<u8> {
-        let mut bytes = serde_json::to_vec(self).expect("DaemonResponse serialization should never fail");
+        let mut bytes =
+            serde_json::to_vec(self).expect("DaemonResponse serialization should never fail");
         bytes.push(b'\n');
         bytes
     }

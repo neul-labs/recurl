@@ -16,7 +16,9 @@ pub fn get_chromium_cache_dir() -> PathBuf {
 }
 
 /// Get path to the Chromium executable, downloading if necessary
-pub async fn ensure_chromium(debug: bool) -> Result<PathBuf, Box<dyn std::error::Error + Send + Sync>> {
+pub async fn ensure_chromium(
+    debug: bool,
+) -> Result<PathBuf, Box<dyn std::error::Error + Send + Sync>> {
     let cache_dir = get_chromium_cache_dir();
 
     // Check if we already have a downloaded Chromium
@@ -37,7 +39,10 @@ pub async fn ensure_chromium(debug: bool) -> Result<PathBuf, Box<dyn std::error:
 
     // Need to download Chromium
     if debug {
-        eprintln!("[recurl] Downloading Chromium to {}...", cache_dir.display());
+        eprintln!(
+            "[recurl] Downloading Chromium to {}...",
+            cache_dir.display()
+        );
     } else {
         eprintln!("[recurl] First run: downloading Chromium browser (this may take a minute)...");
     }
@@ -144,7 +149,12 @@ fn find_system_chrome() -> Option<PathBuf> {
     }
 
     // Also check PATH
-    for cmd in &["chromium", "chromium-browser", "google-chrome", "google-chrome-stable"] {
+    for cmd in &[
+        "chromium",
+        "chromium-browser",
+        "google-chrome",
+        "google-chrome-stable",
+    ] {
         if let Ok(path) = which::which(cmd) {
             return Some(path);
         }
@@ -201,7 +211,7 @@ fn get_install_instructions() -> &'static str {
 /// For unsupported platforms (e.g., Linux ARM64), install Chromium manually.
 async fn download_chromium(
     cache_dir: &PathBuf,
-    debug: bool
+    debug: bool,
 ) -> Result<PathBuf, Box<dyn std::error::Error + Send + Sync>> {
     // Check for unsupported platforms first
     if is_unsupported_platform() {
@@ -222,7 +232,10 @@ async fn download_chromium(
     match fetcher.fetch().await {
         Ok(info) => {
             if debug {
-                eprintln!("[recurl] Chromium downloaded to: {}", info.executable_path.display());
+                eprintln!(
+                    "[recurl] Chromium downloaded to: {}",
+                    info.executable_path.display()
+                );
             } else {
                 eprintln!("[recurl] Chromium ready.");
             }

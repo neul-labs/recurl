@@ -9,8 +9,8 @@
 //! Note: For HTTP response body tests, we compare normalized output
 //! because some servers include dynamic fields (trace IDs, timestamps).
 
-use std::process::{Command, Output};
 use std::env;
+use std::process::{Command, Output};
 
 /// Test result comparing curl and recurl outputs
 #[derive(Debug)]
@@ -40,7 +40,7 @@ fn normalize_http_response(body: &[u8]) -> Vec<u8> {
         // Remove trace IDs (AWS, etc)
         .filter(|line| !line.contains("X-Amzn-Trace-Id"))
         .filter(|line| !line.contains("X-Request-Id"))
-        .filter(|line| !line.contains("\"origin\""))  // IP can vary in JSON
+        .filter(|line| !line.contains("\"origin\"")) // IP can vary in JSON
         // Remove dynamic HTTP headers (for -i and -I output)
         .filter(|line| !line.to_lowercase().starts_with("date:"))
         .filter(|line| !line.to_lowercase().starts_with("x-amzn-"))
@@ -154,10 +154,16 @@ fn assert_result_conformant(result: &ConformanceResult, args: &[&str]) {
         eprintln!("=== CONFORMANCE FAILURE ===");
         eprintln!("Args: {:?}", args);
         eprintln!();
-        eprintln!("--- curl stdout ({} bytes) ---", result.curl_output.stdout.len());
+        eprintln!(
+            "--- curl stdout ({} bytes) ---",
+            result.curl_output.stdout.len()
+        );
         eprintln!("{}", String::from_utf8_lossy(&result.curl_output.stdout));
         eprintln!();
-        eprintln!("--- recurl stdout ({} bytes) ---", result.recurl_output.stdout.len());
+        eprintln!(
+            "--- recurl stdout ({} bytes) ---",
+            result.recurl_output.stdout.len()
+        );
         eprintln!("{}", String::from_utf8_lossy(&result.recurl_output.stdout));
         eprintln!();
         eprintln!("--- curl stderr ---");
@@ -166,9 +172,11 @@ fn assert_result_conformant(result: &ConformanceResult, args: &[&str]) {
         eprintln!("--- recurl stderr ---");
         eprintln!("{}", String::from_utf8_lossy(&result.recurl_output.stderr));
         eprintln!();
-        eprintln!("Exit codes: curl={:?}, recurl={:?}",
+        eprintln!(
+            "Exit codes: curl={:?}, recurl={:?}",
             result.curl_output.status.code(),
-            result.recurl_output.status.code());
+            result.recurl_output.status.code()
+        );
 
         panic!("Conformance test failed");
     }
@@ -206,8 +214,9 @@ fn test_get_simple() {
 fn test_get_with_headers() {
     assert_conformant_http(&[
         "-s",
-        "-H", "X-Custom-Header: test",
-        "https://httpbin.org/headers"
+        "-H",
+        "X-Custom-Header: test",
+        "https://httpbin.org/headers",
     ]);
 }
 
@@ -221,9 +230,11 @@ fn test_head_request() {
 fn test_post_data() {
     assert_conformant_http(&[
         "-s",
-        "-X", "POST",
-        "-d", "key=value",
-        "https://httpbin.org/post"
+        "-X",
+        "POST",
+        "-d",
+        "key=value",
+        "https://httpbin.org/post",
     ]);
 }
 
@@ -231,21 +242,19 @@ fn test_post_data() {
 fn test_post_json() {
     assert_conformant_http(&[
         "-s",
-        "-X", "POST",
-        "-H", "Content-Type: application/json",
-        "-d", r#"{"test": true}"#,
-        "https://httpbin.org/post"
+        "-X",
+        "POST",
+        "-H",
+        "Content-Type: application/json",
+        "-d",
+        r#"{"test": true}"#,
+        "https://httpbin.org/post",
     ]);
 }
 
 #[test]
 fn test_put_request() {
-    assert_conformant_http(&[
-        "-s",
-        "-X", "PUT",
-        "-d", "data",
-        "https://httpbin.org/put"
-    ]);
+    assert_conformant_http(&["-s", "-X", "PUT", "-d", "data", "https://httpbin.org/put"]);
 }
 
 #[test]
@@ -257,9 +266,11 @@ fn test_delete_request() {
 fn test_patch_request() {
     assert_conformant_http(&[
         "-s",
-        "-X", "PATCH",
-        "-d", "patch-data",
-        "https://httpbin.org/patch"
+        "-X",
+        "PATCH",
+        "-d",
+        "patch-data",
+        "https://httpbin.org/patch",
     ]);
 }
 
@@ -271,8 +282,9 @@ fn test_patch_request() {
 fn test_user_agent() {
     assert_conformant_http(&[
         "-s",
-        "-A", "CustomAgent/1.0",
-        "https://httpbin.org/user-agent"
+        "-A",
+        "CustomAgent/1.0",
+        "https://httpbin.org/user-agent",
     ]);
 }
 
@@ -280,8 +292,9 @@ fn test_user_agent() {
 fn test_referer() {
     assert_conformant_http(&[
         "-s",
-        "-e", "https://example.com",
-        "https://httpbin.org/headers"
+        "-e",
+        "https://example.com",
+        "https://httpbin.org/headers",
     ]);
 }
 
@@ -289,10 +302,13 @@ fn test_referer() {
 fn test_multiple_headers() {
     assert_conformant_http(&[
         "-s",
-        "-H", "X-First: one",
-        "-H", "X-Second: two",
-        "-H", "X-Third: three",
-        "https://httpbin.org/headers"
+        "-H",
+        "X-First: one",
+        "-H",
+        "X-Second: two",
+        "-H",
+        "X-Third: three",
+        "https://httpbin.org/headers",
     ]);
 }
 
@@ -326,7 +342,13 @@ fn test_follow_redirect() {
 
 #[test]
 fn test_max_redirects() {
-    assert_conformant_http(&["-s", "-L", "--max-redirs", "2", "https://httpbin.org/redirect/2"]);
+    assert_conformant_http(&[
+        "-s",
+        "-L",
+        "--max-redirs",
+        "2",
+        "https://httpbin.org/redirect/2",
+    ]);
 }
 
 #[test]
@@ -402,20 +424,12 @@ fn test_exit_code_invalid_flag() {
 
 #[test]
 fn test_connect_timeout() {
-    assert_conformant_http(&[
-        "-s",
-        "--connect-timeout", "10",
-        "https://httpbin.org/get"
-    ]);
+    assert_conformant_http(&["-s", "--connect-timeout", "10", "https://httpbin.org/get"]);
 }
 
 #[test]
 fn test_max_time() {
-    assert_conformant_http(&[
-        "-s",
-        "--max-time", "30",
-        "https://httpbin.org/get"
-    ]);
+    assert_conformant_http(&["-s", "--max-time", "30", "https://httpbin.org/get"]);
 }
 
 // ============================================================================
@@ -426,9 +440,11 @@ fn test_max_time() {
 fn test_write_out_http_code() {
     assert_conformant(&[
         "-s",
-        "-o", "/dev/null",
-        "-w", "%{http_code}",
-        "https://httpbin.org/status/200"
+        "-o",
+        "/dev/null",
+        "-w",
+        "%{http_code}",
+        "https://httpbin.org/status/200",
     ]);
 }
 
@@ -436,9 +452,11 @@ fn test_write_out_http_code() {
 fn test_write_out_size() {
     assert_conformant(&[
         "-s",
-        "-o", "/dev/null",
-        "-w", "%{size_download}",
-        "https://httpbin.org/bytes/100"
+        "-o",
+        "/dev/null",
+        "-w",
+        "%{size_download}",
+        "https://httpbin.org/bytes/100",
     ]);
 }
 
@@ -450,8 +468,9 @@ fn test_write_out_size() {
 fn test_basic_auth() {
     assert_conformant_http(&[
         "-s",
-        "-u", "user:pass",
-        "https://httpbin.org/basic-auth/user/pass"
+        "-u",
+        "user:pass",
+        "https://httpbin.org/basic-auth/user/pass",
     ]);
 }
 
@@ -459,8 +478,9 @@ fn test_basic_auth() {
 fn test_basic_auth_fail() {
     assert_conformant_http(&[
         "-s",
-        "-u", "wrong:creds",
-        "https://httpbin.org/basic-auth/user/pass"
+        "-u",
+        "wrong:creds",
+        "https://httpbin.org/basic-auth/user/pass",
     ]);
 }
 
@@ -470,20 +490,12 @@ fn test_basic_auth_fail() {
 
 #[test]
 fn test_send_cookie() {
-    assert_conformant_http(&[
-        "-s",
-        "-b", "session=abc123",
-        "https://httpbin.org/cookies"
-    ]);
+    assert_conformant_http(&["-s", "-b", "session=abc123", "https://httpbin.org/cookies"]);
 }
 
 #[test]
 fn test_multiple_cookies() {
-    assert_conformant_http(&[
-        "-s",
-        "-b", "a=1; b=2; c=3",
-        "https://httpbin.org/cookies"
-    ]);
+    assert_conformant_http(&["-s", "-b", "a=1; b=2; c=3", "https://httpbin.org/cookies"]);
 }
 
 // ============================================================================
@@ -522,8 +534,14 @@ fn test_debug_output() {
     let stderr = String::from_utf8_lossy(&output.stderr);
 
     // Should contain recurl debug markers
-    assert!(stderr.contains("[recurl]"), "Debug output should contain [recurl] prefix");
-    assert!(stderr.contains("detection:"), "Debug output should contain detection info");
+    assert!(
+        stderr.contains("[recurl]"),
+        "Debug output should contain [recurl] prefix"
+    );
+    assert!(
+        stderr.contains("detection:"),
+        "Debug output should contain detection info"
+    );
 }
 
 #[test]
@@ -531,7 +549,10 @@ fn test_debug_shows_version() {
     // Debug mode should show version info
     let output = run_recurl_debug(&["-s", "https://httpbin.org/get"]);
     let stderr = String::from_utf8_lossy(&output.stderr);
-    assert!(stderr.contains("version:"), "Debug output should show version");
+    assert!(
+        stderr.contains("version:"),
+        "Debug output should show version"
+    );
 }
 
 #[test]
@@ -551,7 +572,13 @@ fn test_smart_mode_detects_403() {
 fn test_impersonate_flag() {
     // --recurl-impersonate should be parsed (may fail if engine unavailable)
     let output = Command::new(get_recurl_path())
-        .args(&["--recurl-debug", "--recurl-impersonate", "chrome", "-s", "https://httpbin.org/get"])
+        .args(&[
+            "--recurl-debug",
+            "--recurl-impersonate",
+            "chrome",
+            "-s",
+            "https://httpbin.org/get",
+        ])
         .output()
         .expect("Failed to execute recurl");
 
@@ -564,7 +591,12 @@ fn test_impersonate_flag() {
 fn test_strict_mode_no_escalation() {
     // Strict mode should never attempt escalation
     let output = Command::new(get_recurl_path())
-        .args(&["--recurl-strict", "--recurl-debug", "-s", "https://httpbin.org/status/403"])
+        .args(&[
+            "--recurl-strict",
+            "--recurl-debug",
+            "-s",
+            "https://httpbin.org/status/403",
+        ])
         .output()
         .expect("Failed to execute recurl");
 
@@ -585,7 +617,12 @@ fn test_strict_mode_no_escalation() {
 fn test_js_flag_parsing() {
     // --recurl-js flag should be recognized (may fail if Chrome not available)
     let output = Command::new(get_recurl_path())
-        .args(&["--recurl-js", "--recurl-debug", "-s", "https://httpbin.org/get"])
+        .args(&[
+            "--recurl-js",
+            "--recurl-debug",
+            "-s",
+            "https://httpbin.org/get",
+        ])
         .output()
         .expect("Failed to execute recurl");
 
@@ -602,7 +639,13 @@ fn test_js_flag_parsing() {
 fn test_js_rendered_flag_parsing() {
     // --recurl-js-rendered flag should be recognized
     let output = Command::new(get_recurl_path())
-        .args(&["--recurl-js", "--recurl-js-rendered", "--recurl-debug", "-s", "https://httpbin.org/get"])
+        .args(&[
+            "--recurl-js",
+            "--recurl-js-rendered",
+            "--recurl-debug",
+            "-s",
+            "https://httpbin.org/get",
+        ])
         .output()
         .expect("Failed to execute recurl");
 
@@ -614,7 +657,14 @@ fn test_js_rendered_flag_parsing() {
 fn test_js_timeout_flag_parsing() {
     // --recurl-js-timeout flag should be recognized
     let output = Command::new(get_recurl_path())
-        .args(&["--recurl-js", "--recurl-js-timeout", "5000", "--recurl-debug", "-s", "https://httpbin.org/get"])
+        .args(&[
+            "--recurl-js",
+            "--recurl-js-timeout",
+            "5000",
+            "--recurl-debug",
+            "-s",
+            "https://httpbin.org/get",
+        ])
         .output()
         .expect("Failed to execute recurl");
 
@@ -626,7 +676,14 @@ fn test_js_timeout_flag_parsing() {
 fn test_js_wait_flag_parsing() {
     // --recurl-js-wait flag should be recognized
     let output = Command::new(get_recurl_path())
-        .args(&["--recurl-js", "--recurl-js-wait", "body", "--recurl-debug", "-s", "https://httpbin.org/get"])
+        .args(&[
+            "--recurl-js",
+            "--recurl-js-wait",
+            "body",
+            "--recurl-debug",
+            "-s",
+            "https://httpbin.org/get",
+        ])
         .output()
         .expect("Failed to execute recurl");
 

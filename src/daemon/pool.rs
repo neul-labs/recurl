@@ -58,9 +58,7 @@ impl PoolStats {
     }
 
     pub fn uptime_secs(&self) -> u64 {
-        self.start_time
-            .map(|t| t.elapsed().as_secs())
-            .unwrap_or(0)
+        self.start_time.map(|t| t.elapsed().as_secs()).unwrap_or(0)
     }
 
     pub fn increment_served(&self) {
@@ -181,7 +179,11 @@ impl BrowserPool {
 
         // Health check: can the browser still create pages?
         let healthy = matches!(
-            tokio::time::timeout(Duration::from_secs(5), pooled.browser.new_page("about:blank")).await,
+            tokio::time::timeout(
+                Duration::from_secs(5),
+                pooled.browser.new_page("about:blank")
+            )
+            .await,
             Ok(Ok(_))
         );
 
@@ -200,24 +202,22 @@ impl BrowserPool {
         return_html: bool,
     ) -> DaemonResponse {
         // Create new page
-        let page = match tokio::time::timeout(
-            Duration::from_secs(10),
-            browser.new_page("about:blank"),
-        )
-        .await
-        {
-            Ok(Ok(page)) => page,
-            Ok(Err(e)) => {
-                return DaemonResponse::PreflightError {
-                    error: format!("Failed to create page: {}", e),
-                };
-            }
-            Err(_) => {
-                return DaemonResponse::PreflightError {
-                    error: "Page creation timeout".to_string(),
-                };
-            }
-        };
+        let page =
+            match tokio::time::timeout(Duration::from_secs(10), browser.new_page("about:blank"))
+                .await
+            {
+                Ok(Ok(page)) => page,
+                Ok(Err(e)) => {
+                    return DaemonResponse::PreflightError {
+                        error: format!("Failed to create page: {}", e),
+                    };
+                }
+                Err(_) => {
+                    return DaemonResponse::PreflightError {
+                        error: "Page creation timeout".to_string(),
+                    };
+                }
+            };
 
         // Inject stealth patches before navigation
         let stealth_js = crate::stealth::get_all_patches();
@@ -315,12 +315,14 @@ impl BrowserPool {
         }
     }
 
-    async fn acquire_browser(&self,
-    ) -> Result<PooledBrowser, String> {
+    async fn acquire_browser(&self) -> Result<PooledBrowser, String> {
         let mut browsers = self.browsers.lock().await;
 
         // Try to get an existing ready browser
-        if let Some(idx) = browsers.iter().position(|p| p.state_tracker.state() == BrowserState::Ready) {
+        if let Some(idx) = browsers
+            .iter()
+            .position(|p| p.state_tracker.state() == BrowserState::Ready)
+        {
             let mut pooled = browsers.remove(idx);
             pooled.state_tracker.mark_in_use();
             return Ok(pooled);
@@ -354,8 +356,7 @@ impl BrowserPool {
         // Otherwise, browser is dropped
     }
 
-    async fn create_browser_with_tracker(&self,
-    ) -> Result<PooledBrowser, String> {
+    async fn create_browser_with_tracker(&self) -> Result<PooledBrowser, String> {
         let browser = self.create_browser().await?;
         let mut tracker = BrowserStateTracker::new();
         tracker.mark_ready();
@@ -423,10 +424,7 @@ impl BrowserPool {
     }
 
     /// Get cached cookies for a domain
-    pub async fn get_cached_cookies(
-        &self,
-        domain: &str,
-    ) -> Option<HashMap<String, String>> {
+    pub async fn get_cached_cookies(&self, domain: &str) -> Option<HashMap<String, String>> {
         let cache = self.cookie_cache.read().await;
         cache.get(domain).cloned()
     }

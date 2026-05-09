@@ -123,14 +123,7 @@ const IMPERVA_PATTERNS: &[&str] = &[
 ];
 
 /// Patterns for detecting Kasada
-const KASADA_PATTERNS: &[&str] = &[
-    "kasada",
-    "x-kpsdk",
-    "/ips.js",
-    "/tl/",
-    "cd.js",
-    "kpparam",
-];
+const KASADA_PATTERNS: &[&str] = &["kasada", "x-kpsdk", "/ips.js", "/tl/", "cd.js", "kpparam"];
 
 /// Patterns for detecting Shape Security / F5 Bot Defense
 const SHAPE_PATTERNS: &[&str] = &[
@@ -300,13 +293,19 @@ mod tests {
     #[test]
     fn test_perimeterx_detection() {
         let body = b"Cookie: _px3=abc123";
-        assert_eq!(detect_antibot_patterns(body), Some(AntibotService::PerimeterX));
+        assert_eq!(
+            detect_antibot_patterns(body),
+            Some(AntibotService::PerimeterX)
+        );
     }
 
     #[test]
     fn test_datadome_detection() {
         let body = b"datadome=xyz; path=/";
-        assert_eq!(detect_antibot_patterns(body), Some(AntibotService::DataDome));
+        assert_eq!(
+            detect_antibot_patterns(body),
+            Some(AntibotService::DataDome)
+        );
     }
 
     #[test]
@@ -318,19 +317,28 @@ mod tests {
     #[test]
     fn test_hcaptcha_detection() {
         let body = b"<script src=\"https://hcaptcha.com/1/api.js\"></script>";
-        assert_eq!(detect_antibot_patterns(body), Some(AntibotService::HCaptcha));
+        assert_eq!(
+            detect_antibot_patterns(body),
+            Some(AntibotService::HCaptcha)
+        );
     }
 
     #[test]
     fn test_recaptcha_detection() {
         let body = b"<div class=\"g-recaptcha\" data-sitekey=\"abc\"></div>";
-        assert_eq!(detect_antibot_patterns(body), Some(AntibotService::ReCaptcha));
+        assert_eq!(
+            detect_antibot_patterns(body),
+            Some(AntibotService::ReCaptcha)
+        );
     }
 
     #[test]
     fn test_js_challenge_detection() {
         let body = b"<noscript>Please enable JavaScript to continue</noscript>";
-        assert_eq!(detect_antibot_patterns(body), Some(AntibotService::JsChallenge));
+        assert_eq!(
+            detect_antibot_patterns(body),
+            Some(AntibotService::JsChallenge)
+        );
     }
 
     #[test]
@@ -342,7 +350,10 @@ mod tests {
     #[test]
     fn test_case_insensitive() {
         let body = b"CF-RAY: 1234567890-LAX";
-        assert_eq!(detect_antibot_patterns(body), Some(AntibotService::Cloudflare));
+        assert_eq!(
+            detect_antibot_patterns(body),
+            Some(AntibotService::Cloudflare)
+        );
     }
 
     #[test]

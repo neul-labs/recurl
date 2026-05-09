@@ -46,7 +46,13 @@ pub fn start_daemon_if_needed(debug: bool) -> io::Result<()> {
     // Find recurld binary (same directory as recurl)
     let recurld_path = std::env::current_exe()?
         .parent()
-        .map(|p| p.join(if cfg!(windows) { "recurld.exe" } else { "recurld" }))
+        .map(|p| {
+            p.join(if cfg!(windows) {
+                "recurld.exe"
+            } else {
+                "recurld"
+            })
+        })
         .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "Cannot find recurld"))?;
 
     if !recurld_path.exists() {

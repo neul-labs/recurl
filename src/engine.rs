@@ -1,6 +1,6 @@
 use std::env;
-use std::path::PathBuf;
 use std::io;
+use std::path::PathBuf;
 
 /// Engine types available for execution
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -82,7 +82,10 @@ pub fn find_engine(engine_type: EngineType) -> io::Result<PathBuf> {
 
     Err(io::Error::new(
         io::ErrorKind::NotFound,
-        format!("{} not found. Set RECURL_ENGINE_PATH or install recurl properly.", binary_name),
+        format!(
+            "{} not found. Set RECURL_ENGINE_PATH or install recurl properly.",
+            binary_name
+        ),
     ))
 }
 
@@ -111,7 +114,10 @@ mod tests {
     fn test_engine_type_from_profile() {
         assert_eq!(EngineType::from_profile("chrome"), Some(EngineType::Chrome));
         assert_eq!(EngineType::from_profile("Chrome"), Some(EngineType::Chrome));
-        assert_eq!(EngineType::from_profile("firefox"), Some(EngineType::Firefox));
+        assert_eq!(
+            EngineType::from_profile("firefox"),
+            Some(EngineType::Firefox)
+        );
         assert_eq!(EngineType::from_profile("ff"), Some(EngineType::Firefox));
         assert_eq!(EngineType::from_profile("safari"), Some(EngineType::Safari));
         assert_eq!(EngineType::from_profile("unknown"), None);

@@ -51,12 +51,16 @@ impl DetectionResult {
             format!(
                 "Blocked: {} (status: {})",
                 service,
-                status_code.map(|c| c.to_string()).unwrap_or_else(|| "unknown".to_string())
+                status_code
+                    .map(|c| c.to_string())
+                    .unwrap_or_else(|| "unknown".to_string())
             )
         } else if status_blocked {
             format!(
                 "Blocked: HTTP {}",
-                status_code.map(|c| c.to_string()).unwrap_or_else(|| "unknown".to_string())
+                status_code
+                    .map(|c| c.to_string())
+                    .unwrap_or_else(|| "unknown".to_string())
             )
         } else {
             "No blocking detected".to_string()
@@ -95,7 +99,10 @@ mod tests {
         let body = b"<title>Just a moment...</title>";
         let result = DetectionResult::analyze(Some(403), body);
         assert!(result.should_escalate);
-        assert!(matches!(result.antibot_service, Some(AntibotService::Cloudflare)));
+        assert!(matches!(
+            result.antibot_service,
+            Some(AntibotService::Cloudflare)
+        ));
     }
 
     #[test]

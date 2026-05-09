@@ -1,7 +1,7 @@
 use std::env;
 use std::io::{self, Write};
-use std::process::{Command, Stdio, ExitCode};
 use std::path::PathBuf;
+use std::process::{Command, ExitCode, Stdio};
 
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
@@ -31,7 +31,10 @@ fn main() -> ExitCode {
     // Debug output
     if config.debug {
         eprintln!("[recurl] version: {}", env!("CARGO_PKG_VERSION"));
-        eprintln!("[recurl] mode: {}", if config.strict { "strict" } else { "smart" });
+        eprintln!(
+            "[recurl] mode: {}",
+            if config.strict { "strict" } else { "smart" }
+        );
         eprintln!("[recurl] curl args: {:?}", curl_args);
     }
 
@@ -179,19 +182,30 @@ mod tests {
     fn test_extract_url_from_args() {
         // Simple URL at end
         let args = vec!["-s".to_string(), "https://example.com".to_string()];
-        assert_eq!(extract_url_from_args(&args), Some("https://example.com".to_string()));
+        assert_eq!(
+            extract_url_from_args(&args),
+            Some("https://example.com".to_string())
+        );
 
         // URL with flags before and after
         let args = vec![
-            "-X".to_string(), "POST".to_string(),
-            "-H".to_string(), "Content-Type: application/json".to_string(),
+            "-X".to_string(),
+            "POST".to_string(),
+            "-H".to_string(),
+            "Content-Type: application/json".to_string(),
             "https://api.example.com/endpoint".to_string(),
         ];
-        assert_eq!(extract_url_from_args(&args), Some("https://api.example.com/endpoint".to_string()));
+        assert_eq!(
+            extract_url_from_args(&args),
+            Some("https://api.example.com/endpoint".to_string())
+        );
 
         // HTTP URL (not HTTPS)
         let args = vec!["-s".to_string(), "http://localhost:8080".to_string()];
-        assert_eq!(extract_url_from_args(&args), Some("http://localhost:8080".to_string()));
+        assert_eq!(
+            extract_url_from_args(&args),
+            Some("http://localhost:8080".to_string())
+        );
 
         // No URL
         let args = vec!["-V".to_string()];
@@ -202,7 +216,10 @@ mod tests {
             "https://first.com".to_string(),
             "https://second.com".to_string(),
         ];
-        assert_eq!(extract_url_from_args(&args), Some("https://second.com".to_string()));
+        assert_eq!(
+            extract_url_from_args(&args),
+            Some("https://second.com".to_string())
+        );
     }
 
     #[test]
