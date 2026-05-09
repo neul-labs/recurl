@@ -1,3 +1,5 @@
+#![allow(dead_code, unused_imports, clippy::manual_ok_err)]
+
 //! recurld - recurl daemon
 //!
 //! Keeps Chromium instances warm for fast JS preflight operations.

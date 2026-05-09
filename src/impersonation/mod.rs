@@ -10,20 +10,15 @@ use std::process::{Command, Output, Stdio};
 use crate::engine::{find_engine, EngineType};
 
 /// Available impersonation profiles
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum ImpersonationProfile {
     /// Chrome browser fingerprint (default)
+    #[default]
     Chrome,
     /// Firefox browser fingerprint
     Firefox,
     /// Safari browser fingerprint
     Safari,
-}
-
-impl Default for ImpersonationProfile {
-    fn default() -> Self {
-        ImpersonationProfile::Chrome
-    }
 }
 
 impl ImpersonationProfile {

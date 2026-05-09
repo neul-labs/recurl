@@ -1,3 +1,5 @@
+#![allow(dead_code, unused_imports, clippy::manual_ok_err)]
+
 use std::env;
 use std::io::{self, Write};
 use std::path::PathBuf;

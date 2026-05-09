@@ -12,10 +12,7 @@ mod cookies;
 mod preflight_state;
 mod stealth;
 
-pub use browser_config::{build_pool_browser_config, build_stealth_browser_config};
-pub use chromium::{ensure_chromium, get_chromium_cache_dir};
 pub use cookies::{Cookie, ExtractedCookies};
-pub use stealth::get_all_patches;
 
 use std::time::Duration;
 

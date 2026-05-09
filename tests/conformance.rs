@@ -572,7 +572,7 @@ fn test_smart_mode_detects_403() {
 fn test_impersonate_flag() {
     // --recurl-impersonate should be parsed (may fail if engine unavailable)
     let output = Command::new(get_recurl_path())
-        .args(&[
+        .args([
             "--recurl-debug",
             "--recurl-impersonate",
             "chrome",
@@ -591,7 +591,7 @@ fn test_impersonate_flag() {
 fn test_strict_mode_no_escalation() {
     // Strict mode should never attempt escalation
     let output = Command::new(get_recurl_path())
-        .args(&[
+        .args([
             "--recurl-strict",
             "--recurl-debug",
             "-s",
@@ -617,7 +617,7 @@ fn test_strict_mode_no_escalation() {
 fn test_js_flag_parsing() {
     // --recurl-js flag should be recognized (may fail if Chrome not available)
     let output = Command::new(get_recurl_path())
-        .args(&[
+        .args([
             "--recurl-js",
             "--recurl-debug",
             "-s",
@@ -639,7 +639,7 @@ fn test_js_flag_parsing() {
 fn test_js_rendered_flag_parsing() {
     // --recurl-js-rendered flag should be recognized
     let output = Command::new(get_recurl_path())
-        .args(&[
+        .args([
             "--recurl-js",
             "--recurl-js-rendered",
             "--recurl-debug",
@@ -657,7 +657,7 @@ fn test_js_rendered_flag_parsing() {
 fn test_js_timeout_flag_parsing() {
     // --recurl-js-timeout flag should be recognized
     let output = Command::new(get_recurl_path())
-        .args(&[
+        .args([
             "--recurl-js",
             "--recurl-js-timeout",
             "5000",
@@ -676,7 +676,7 @@ fn test_js_timeout_flag_parsing() {
 fn test_js_wait_flag_parsing() {
     // --recurl-js-wait flag should be recognized
     let output = Command::new(get_recurl_path())
-        .args(&[
+        .args([
             "--recurl-js",
             "--recurl-js-wait",
             "body",

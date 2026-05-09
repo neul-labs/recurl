@@ -445,10 +445,11 @@ pub fn extract_url_from_args(args: &[String]) -> Option<String> {
     }
 
     for arg in args.iter().rev() {
-        if !arg.starts_with('-') && !arg.is_empty() {
-            if arg.contains('.') && !arg.contains('/') || arg.starts_with("http") {
-                return Some(arg.clone());
-            }
+        if !arg.starts_with('-')
+            && !arg.is_empty()
+            && ((arg.contains('.') && !arg.contains('/')) || arg.starts_with("http"))
+        {
+            return Some(arg.clone());
         }
     }
 

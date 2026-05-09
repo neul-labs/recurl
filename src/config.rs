@@ -1,7 +1,7 @@
 use std::env;
 
 /// recurl configuration parsed from command line and environment
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct RecurlConfig {
     /// Strict mode: no fallback, pure curl passthrough
     pub strict: bool,
@@ -26,21 +26,6 @@ pub struct RecurlConfig {
 
     /// Daemon control: Some(true) = force on, Some(false) = force off, None = auto
     pub daemon: Option<bool>,
-}
-
-impl Default for RecurlConfig {
-    fn default() -> Self {
-        Self {
-            strict: false,
-            debug: false,
-            impersonate: None,
-            js: false,
-            js_rendered: false,
-            js_wait: None,
-            js_timeout: None,
-            daemon: None,
-        }
-    }
 }
 
 impl RecurlConfig {

@@ -292,10 +292,7 @@ impl BrowserPool {
 
         // Get HTML if requested
         let html = if return_html {
-            match page.content().await {
-                Ok(h) => Some(h),
-                Err(_) => None,
-            }
+            page.content().await.ok()
         } else {
             None
         };
