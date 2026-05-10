@@ -18,6 +18,13 @@ Thumbs.db
 *.so
 *.dylib
 
+# Python build artifacts
+*.egg-info/
+dist/
+build/
+__pycache__/
+*.pyc
+
 # Test binaries (bundled engines are tracked separately)
 /bin/curl_engine
 /bin/curl_chrome
