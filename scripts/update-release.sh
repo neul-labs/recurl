@@ -53,7 +53,7 @@ done
 echo ""
 echo "Updating Homebrew formula..."
 
-HOMEBREW_FILE="packaging/homebrew/recurl.rb"
+HOMEBREW_FILE="packages/homebrew/recurl.rb"
 if [ -f "$HOMEBREW_FILE" ]; then
     sed -i "s/version \"[^\"]*\"/version \"$VERSION_NUM\"/" "$HOMEBREW_FILE"
 
@@ -76,7 +76,7 @@ fi
 # Update Scoop manifest
 echo "Updating Scoop manifest..."
 
-SCOOP_FILE="packaging/scoop/recurl.json"
+SCOOP_FILE="packages/scoop/recurl.json"
 if [ -f "$SCOOP_FILE" ]; then
     sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"$VERSION_NUM\"/" "$SCOOP_FILE"
     sed -i "s|/v[0-9.]*-*[a-z0-9]*/|/$VERSION/|g" "$SCOOP_FILE"
@@ -116,6 +116,6 @@ fi
 
 echo ""
 echo "Done! Review the changes and commit:"
-echo "  git diff packaging/"
-echo "  git add packaging/"
+echo "  git diff packages/"
+echo "  git add packages/"
 echo "  git commit -m 'Update package manifests for $VERSION'"

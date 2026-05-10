@@ -393,7 +393,7 @@ All core milestones are complete:
 
 | Item | Status | Notes |
 |------|--------|-------|
-| AUR package (Arch Linux) | ✓ Done | `packaging/aur/PKGBUILD` |
+| AUR package (Arch Linux) | ✓ Done | `packages/aur/PKGBUILD` |
 | Windows named pipes | ✓ Done | Full daemon IPC support on Windows |
 | Detection patterns | ✓ Done | Added Kasada, Shape/F5, Arkose, AWS WAF, GeeTest |
 | Chromium stealth patches | ✓ Done | 7 patches from puppeteer-extra-plugin-stealth |

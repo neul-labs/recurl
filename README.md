@@ -24,7 +24,7 @@ recurl https://protected-site.com/api/data
 
 ```bash
 # npm / npx
-npm install -g @neul-labs/recurl
+npm install -g recurl-cli
 
 # PyPI
 pip install recurl-cli

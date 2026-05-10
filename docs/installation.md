@@ -141,10 +141,10 @@ brew install neul-labs/tap/recurl
 
 ```bash
 # Global install
-npm install -g @neul-labs/recurl
+npm install -g recurl-cli
 
 # Or run without installing
-npx @neul-labs/recurl https://example.com
+npx recurl-cli https://example.com
 ```
 
 ### PyPI (Python)
