@@ -6,7 +6,7 @@ pkgver=0.1.2
 pkgrel=1
 pkgdesc="Drop-in curl replacement with automatic anti-bot bypass"
 arch=('x86_64' 'aarch64')
-url="https://github.com/user/recurl"
+url="https://github.com/neul-labs/recurl"
 license=('MIT')
 depends=('curl' 'openssl')
 makedepends=('cargo' 'git')
@@ -16,7 +16,7 @@ optdepends=(
 )
 provides=('recurl')
 conflicts=('recurl-bin' 'recurl-git')
-source=("$pkgname-$pkgver.tar.gz::https://github.com/user/recurl/archive/v$pkgver.tar.gz")
+source=("$pkgname-$pkgver.tar.gz::https://github.com/neul-labs/recurl/archive/v$pkgver.tar.gz")
 sha256sums=('SKIP')
 
 build() {
