@@ -21,7 +21,7 @@
     "preuninstall": "node uninstall.js"
   },
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=24.0.0"
   },
   "os": ["darwin", "linux", "win32"],
   "cpu": ["x64", "arm64"],
